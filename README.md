@@ -6,8 +6,6 @@
 
 A full-fledged administrative interface where administrators can test, monitor, and improve an AI-powered educational chatbot. This portal enables administrators to analyze chatbot performance, manage low-confidence responses, and enhance the AI through training data input.
 
-![Dashboard Screenshot](./assets/roc-curve-dashboard.png)
-
 ## 🚀 Live Demo
 
 **Deployment URL**: [Administrative Training Portal](https://admin-chatbot-portal.vercel.app/)
