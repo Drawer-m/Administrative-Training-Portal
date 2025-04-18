@@ -19,9 +19,7 @@ A full-fledged administrative interface where administrators can test, monitor, 
 ## ✨ Features
 
 ### 🔒 Authentication
-- Secure admin-only access
-- Session persistence with localStorage
-- Clear error handling for failed login attempts
+- A basic simulated authentication has been implemented using hardcoded credentials.
 
 ### 🤖 Chatbot Testing Interface
 - Real-time AI-powered responses using Google's Gemini API
@@ -60,36 +58,6 @@ A full-fledged administrative interface where administrators can test, monitor, 
 - **Routing**: React Router
 - **AI Integration**: Google Gemini API
 - **Deployment**: Vercel
-
-## 📋 Project Structure
-
-```
-admin-chatbot-portal/
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── Accessibility.jsx       # Theme context provider
-│   │   ├── AccessibilityPanel.jsx  # Accessibility controls UI
-│   │   ├── Analytics.jsx           # Analytics dashboard
-│   │   ├── Chatbot.jsx             # Chatbot testing interface
-│   │   ├── Dashboard.jsx           # Main dashboard layout
-│   │   ├── Login.jsx               # Authentication screen
-│   │   ├── LowConfidence.jsx       # Low confidence queries management
-│   │   └── Sidebar.jsx             # Navigation sidebar
-│   ├── services/
-│   │   └── apiservice.js           # API integration service
-│   ├── App.jsx                     # Main application component
-│   ├── index.css                   # Global styles
-│   ├── main.jsx                    # Application entry point
-│   └── theme.css                   # Theme variables
-├── .gitignore
-├── index.html
-├── package.json
-├── postcss.config.cjs
-├── tailwind.config.js
-├── vite.config.js
-└── README.md
-```
 
 ## 🏃‍♀️ Getting Started
 
