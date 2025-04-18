@@ -2,8 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Your existing CSS below this line */
+/* Accessibility and UI Enhancements */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  /* ... rest of your existing CSS ... */
+}
+
+:focus {
+  outline: 2px dashed #2563eb;
+  outline-offset: 2px;
+}
+
+body {
+  background: var(--custom-bg, #f8ede3);
+  color: var(--custom-text, #333);
+}
+button {
+  transition: all 0.3s ease-in-out;
+}
+button:hover {
+  transform: scale(1.05);
 }

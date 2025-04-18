@@ -1,10 +1,15 @@
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement } from 'chart.js';
+import {
+  Box, Grid, Paper, Typography, List, ListItem, ListItemText, Divider, useTheme, Container, Stack
+} from '@mui/material';
 
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement);
 
 const Analytics = ({ queries }) => {
+  const theme = useTheme();
+
   // Generate mock data for demonstration
   const generateMockData = () => {
     return {
@@ -21,7 +26,7 @@ const Analytics = ({ queries }) => {
   };
 
   const mockData = generateMockData();
-  
+
   // Calculate confidence metrics from actual queries
   const confidenceData = {
     high: queries.filter(q => q.confidence >= 70).length,
@@ -36,7 +41,8 @@ const Analytics = ({ queries }) => {
       {
         label: 'Queries per Day',
         data: mockData.dailyQueries,
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        backgroundColor: theme.palette.primary.light,
+        borderColor: theme.palette.primary.main,
         borderWidth: 1,
       }
     ]
@@ -48,7 +54,8 @@ const Analytics = ({ queries }) => {
       {
         label: 'Avg. Response Time (s)',
         data: mockData.responseTime,
-        borderColor: 'rgba(255, 99, 132, 1)',
+        borderColor: theme.palette.secondary.main,
+        backgroundColor: theme.palette.secondary.light,
         tension: 0.1,
         fill: false
       }
@@ -60,74 +67,364 @@ const Analytics = ({ queries }) => {
     datasets: [{
       data: Object.values(mockData.categories),
       backgroundColor: [
-        'rgba(255, 99, 132, 0.5)',
-        'rgba(54, 162, 235, 0.5)',
-        'rgba(255, 206, 86, 0.5)',
-        'rgba(75, 192, 192, 0.5)',
-        'rgba(153, 102, 255, 0.5)'
+        theme.palette.error.light,
+        theme.palette.primary.light,
+        theme.palette.warning.light,
+        theme.palette.success.light,
+        theme.palette.info.light
       ],
       borderWidth: 1
     }]
   };
 
+  // Chart options with increased padding and spacing
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: 10 },
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 20 } }
+    }
+  };
+
   return (
-    <div>
-      <div className="grid md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Total Queries</h3>
-          <p className="text-2xl font-bold">{confidenceData.total}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">High Confidence</h3>
-          <p className="text-2xl font-bold text-green-600">{confidenceData.high}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Medium Confidence</h3>
-          <p className="text-2xl font-bold text-yellow-600">{confidenceData.medium}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Low Confidence</h3>
-          <p className="text-2xl font-bold text-red-600">{confidenceData.low}</p>
-        </div>
-      </div>
+    <Box sx={{ bgcolor: '#f8ede3', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="lg">
+        <Divider sx={{ mb: 4 }} />
 
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Queries per Day</h3>
-          <Bar data={barData} options={{ responsive: true }} />
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Response Time</h3>
-          <Line data={lineData} options={{ responsive: true }} />
-        </div>
-      </div>
+        {/* Metrics Cards */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={3} sx={{ p: 3, textAlign: 'center', bgcolor: '#e0c3fc' }}>
+              <Typography variant="caption" color="text.secondary">Total Queries</Typography>
+              <Typography variant="h5" fontWeight="bold" sx={{ mt: 1 }}>{confidenceData.total}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={3} sx={{ p: 3, textAlign: 'center', bgcolor: '#b5ead7' }}>
+              <Typography variant="caption" color="text.secondary">High Confidence</Typography>
+              <Typography variant="h5" fontWeight="bold" color="success.main" sx={{ mt: 1 }}>{confidenceData.high}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={3} sx={{ p: 3, textAlign: 'center', bgcolor: '#f9f7d9' }}>
+              <Typography variant="caption" color="text.secondary">Medium Confidence</Typography>
+              <Typography variant="h5" fontWeight="bold" color="warning.main" sx={{ mt: 1 }}>{confidenceData.medium}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={3} sx={{ p: 3, textAlign: 'center', bgcolor: '#ffb3ba' }}>
+              <Typography variant="caption" color="text.secondary">Low Confidence</Typography>
+              <Typography variant="h5" fontWeight="bold" color="error.main" sx={{ mt: 1 }}>{confidenceData.low}</Typography>
+            </Paper>
+          </Grid>
+        </Grid>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Query Categories</h3>
-          <div className="w-full max-w-md mx-auto">
-            <Doughnut data={doughnutData} options={{ responsive: true }} />
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Recent Improvements</h3>
-          <ul className="space-y-2">
-            <li className="p-2 border-l-4 border-green-500 bg-green-50">
-              <p className="font-medium">Course Registration Process</p>
-              <p className="text-sm text-gray-600">Confidence improved from 48% to 92%</p>
-            </li>
-            <li className="p-2 border-l-4 border-green-500 bg-green-50">
-              <p className="font-medium">Financial Aid Requirements</p>
-              <p className="text-sm text-gray-600">Confidence improved from 53% to 88%</p>
-            </li>
-            <li className="p-2 border-l-4 border-yellow-500 bg-yellow-50">
-              <p className="font-medium">Campus Housing Options</p>
-              <p className="text-sm text-gray-600">In progress - Current confidence 67%</p>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+        <Divider sx={{ mb: 4 }} />
+
+        {/* Charts Section */}
+        <Stack spacing={4}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={4}
+                sx={{
+                  p: 0,
+                  height: 400,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  bgcolor: '#e0f7fa',
+                  borderRadius: 3,
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Header */}
+                <Box
+                  sx={{
+                    bgcolor: 'primary.light',
+                    px: 3,
+                    py: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderBottom: `1px solid ${theme.palette.divider}`
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: 36,
+                      height: 36,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 2
+                    }}
+                  >
+                    <span role="img" aria-label="bar-chart">
+                      📈
+                    </span>
+                  </Box>
+                  <Typography variant="h6" fontWeight="medium">
+                    Queries per Day
+                  </Typography>
+                </Box>
+                {/* Chart */}
+                <Box sx={{ flex: 1, px: 2, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Bar data={barData} options={chartOptions} />
+                </Box>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={4}
+                sx={{
+                  p: 0,
+                  height: 400,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  bgcolor: '#fff1e6',
+                  borderRadius: 3,
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Header */}
+                <Box
+                  sx={{
+                    bgcolor: 'secondary.light',
+                    px: 3,
+                    py: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderBottom: `1px solid ${theme.palette.divider}`
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: 'secondary.main',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: 36,
+                      height: 36,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 2
+                    }}
+                  >
+                    <span role="img" aria-label="line-chart">
+                      ⏱️
+                    </span>
+                  </Box>
+                  <Typography variant="h6" fontWeight="medium">
+                    Avg. Response Time
+                  </Typography>
+                </Box>
+                {/* Chart */}
+                <Box sx={{ flex: 1, px: 2, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Line data={lineData} options={chartOptions} />
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={4}
+                sx={{
+                  p: 0,
+                  height: 400,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  bgcolor: '#f9f7d9',
+                  borderRadius: 3,
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Header */}
+                <Box
+                  sx={{
+                    bgcolor: 'info.light',
+                    px: 3,
+                    py: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderBottom: `1px solid ${theme.palette.divider}`
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: 'info.main',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: 36,
+                      height: 36,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 2
+                    }}
+                  >
+                    <span role="img" aria-label="category">
+                      📊
+                    </span>
+                  </Box>
+                  <Typography variant="h6" fontWeight="medium">
+                    Query Categories
+                  </Typography>
+                </Box>
+                {/* Chart and List */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', px: 2, py: 2 }}>
+                  <Box sx={{ width: '60%', maxWidth: 180, mx: 2 }}>
+                    <Doughnut
+                      data={doughnutData}
+                      options={{
+                        ...chartOptions,
+                        plugins: {
+                          ...chartOptions.plugins,
+                          legend: { display: false }
+                        }
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ flex: 1, ml: 2, overflowY: 'auto', maxHeight: 300 }}>
+                    <List dense>
+                      {Object.entries(mockData.categories).map(([cat, count], idx) => (
+                        <ListItem key={cat} sx={{ py: 0.5 }}>
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              bgcolor: doughnutData.datasets[0].backgroundColor[idx],
+                              mr: 1.5,
+                              border: '1.5px solid #fff',
+                              boxShadow: 1
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ flex: 1 }}>
+                            {cat}
+                          </Typography>
+                          <Box
+                            sx={{
+                              bgcolor: doughnutData.datasets[0].backgroundColor[idx],
+                              color: '#222',
+                              px: 1.5,
+                              borderRadius: 1,
+                              fontWeight: 600,
+                              fontSize: 13,
+                              minWidth: 32,
+                              textAlign: 'center'
+                            }}
+                          >
+                            {count}
+                          </Box>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                </Box>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={4}
+                sx={{
+                  p: 0,
+                  height: 400,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  bgcolor: '#b5ead7',
+                  borderRadius: 3,
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Header */}
+                <Box
+                  sx={{
+                    bgcolor: 'success.light',
+                    px: 3,
+                    py: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderBottom: `1px solid ${theme.palette.divider}`
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: 'success.main',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: 36,
+                      height: 36,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 2
+                    }}
+                  >
+                    <span role="img" aria-label="improvement">
+                      🚀
+                    </span>
+                  </Box>
+                  <Typography variant="h6" fontWeight="medium">
+                    Recent Improvements
+                  </Typography>
+                </Box>
+                {/* List */}
+                <Box sx={{ flex: 1, px: 2, py: 2, overflowY: 'auto' }}>
+                  <List dense>
+                    <ListItem
+                      sx={{
+                        mb: 2,
+                        pl: 2,
+                        borderLeft: `4px solid ${theme.palette.success.main}`,
+                        bgcolor: theme.palette.success.light + '20',
+                        borderRadius: 1
+                      }}
+                    >
+                      <ListItemText
+                        primary={<Typography fontWeight="medium">Course Registration Process</Typography>}
+                        secondary="Confidence improved from 48% to 92%"
+                      />
+                    </ListItem>
+                    <ListItem
+                      sx={{
+                        mb: 2,
+                        pl: 2,
+                        borderLeft: `4px solid ${theme.palette.success.main}`,
+                        bgcolor: theme.palette.success.light + '20',
+                        borderRadius: 1
+                      }}
+                    >
+                      <ListItemText
+                        primary={<Typography fontWeight="medium">Financial Aid Requirements</Typography>}
+                        secondary="Confidence improved from 53% to 88%"
+                      />
+                    </ListItem>
+                    <ListItem
+                      sx={{
+                        pl: 2,
+                        borderLeft: `4px solid ${theme.palette.warning.main}`,
+                        bgcolor: theme.palette.warning.light + '20',
+                        borderRadius: 1
+                      }}
+                    >
+                      <ListItemText
+                        primary={<Typography fontWeight="medium">Campus Housing Options</Typography>}
+                        secondary="In progress - Current confidence 67%"
+                      />
+                    </ListItem>
+                  </List>
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Stack>
+      </Container>
+    </Box>
   );
 };
 

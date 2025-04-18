@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaLock } from 'react-icons/fa';
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  InputAdornment,
+  CircularProgress,
+  Alert,
+  Stack
+} from '@mui/material';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -9,102 +20,116 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
-    // Simulate API call
     setTimeout(() => {
       if (username === 'admin' && password === 'admin123') {
         localStorage.setItem('isLoggedIn', 'true');
-        navigate('/dashboard');
+        setIsLoading(false);
+        navigate('/dashboard', { replace: true });
+        window.location.reload(); 
       } else {
         setError('Invalid username or password. Try admin/admin123.');
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }, 1000);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Admin Training Portal
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to access the administrative interface
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="username" className="sr-only">Username</label>
-              <div className="flex items-center">
-                <span className="inline-flex items-center px-3 py-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                  <FaUser />
-                </span>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-r-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="mt-3">
-              <label htmlFor="password" className="sr-only">Password</label>
-              <div className="flex items-center">
-                <span className="inline-flex items-center px-3 py-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                  <FaLock />
-                </span>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-r-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{error}</h3>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <button
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #fdf6fd 0%, #e0c3fc 50%, #a1c4fd 100%)',
+        py: 4,
+      }}
+    >
+      <Paper
+        elevation={8}
+        sx={{
+          maxWidth: 420,
+          width: '100%',
+          p: 5,
+          borderRadius: 5,
+          boxShadow: 10,
+          bgcolor: '#f8ede3', 
+          border: '1px solid #e0c3fc',
+        }}
+      >
+        <Typography variant="h4" fontWeight="bold" align="center" gutterBottom>
+          Welcome to AdminBot
+        </Typography>
+        <Typography variant="subtitle1" align="center" color="text.secondary" sx={{ mb: 3 }}>
+          Sign in to access the <span style={{ color: '#7b2ff2', fontWeight: 700 }}>Admin Portal</span>
+        </Typography>
+        <form onSubmit={handleLogin}>
+          <Stack spacing={2}>
+            <TextField
+              label="Username"
+              variant="outlined"
+              fullWidth
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FaUser />
+                  </InputAdornment>
+                ),
+              }}
+              autoFocus
+            />
+            <TextField
+              label="Password"
+              variant="outlined"
+              type="password"
+              fullWidth
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FaLock />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {error && (
+              <Alert severity="error" variant="filled">
+                {error}
+              </Alert>
+            )}
+            <Button
               type="submit"
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
               disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+              sx={{
+                fontWeight: 'bold',
+                py: 1.5,
+                bgcolor: 'primary.main',
+                '&:hover': { bgcolor: 'primary.dark' }
+              }}
+              startIcon={isLoading && <CircularProgress size={20} color="inherit" />}
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
-          
-          <div className="text-sm text-center text-gray-500">
-            <p>Demo credentials: admin / admin123</p>
-          </div>
+            </Button>
+            <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
+              Demo credentials: <span style={{ fontWeight: 700 }}>admin / admin123</span>
+            </Typography>
+          </Stack>
         </form>
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 }
 

@@ -8,19 +8,27 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
     const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
     setIsLoggedIn(loggedIn);
     setIsLoading(false);
   }, []);
 
-  // Add a debug message to see if the component is rendering
-  console.log("App component rendering");
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background: 'linear-gradient(135deg, #fdf6fd 0%, #e0c3fc 50%, #a1c4fd 100%)',
+          borderRadius: '24px'
+        }}
+      >
+        <div
+          className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"
+          style={{
+            borderRadius: '50%',
+            background: '#e0c3fc'
+          }}
+        ></div>
       </div>
     );
   }
