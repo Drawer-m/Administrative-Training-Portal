@@ -8,7 +8,7 @@ A full-fledged administrative interface where administrators can test, monitor, 
 
 ## 🚀 Live Demo
 
-**Deployment URL**: [Administrative Training Portal](https://admin-chatbot-portal.vercel.app/)
+**Deployment URL**: [Administrative Training Portal](https://administrative-training-portal-git-main-drawer-ms-projects.vercel.app/)
 
 **Admin Credentials**:
 - Username: `admin`
