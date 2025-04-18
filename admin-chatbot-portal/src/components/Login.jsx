@@ -30,7 +30,6 @@ function Login() {
         localStorage.setItem('isLoggedIn', 'true');
         setIsLoading(false);
         navigate('/dashboard', { replace: true });
-        window.location.reload(); 
       } else {
         setError('Invalid username or password. Try admin/admin123.');
         setIsLoading(false);

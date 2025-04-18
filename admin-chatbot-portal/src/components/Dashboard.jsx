@@ -173,7 +173,7 @@ const Dashboard = () => {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
-          bgcolor: 'transparent', // changed from '#f8ede3'
+          bgcolor: 'transparent', 
         }}
       >
         <Box sx={{ maxWidth: 1200, mx: 0 }}>
@@ -216,11 +216,11 @@ const Dashboard = () => {
                       height: 320,
                       display: 'flex',
                       flexDirection: 'column',
-                      bgcolor: '#e0f7fa', // match Queries per Day in Analytics
+                      bgcolor: '#e0f7fa', 
                       borderRadius: 4,
                       overflow: 'hidden',
                       position: 'relative',
-                      boxShadow: '0 4px 16px 0 rgba(25,118,210,0.08)'
+                      boxShadow: '0 8px 32px 0 rgba(25,118,210,0.15)'
                     }}
                   >
                     {/* Header */}
@@ -256,7 +256,7 @@ const Dashboard = () => {
                         variant="h6"
                         fontWeight="medium"
                         sx={{
-                          color: '#222', // black text
+                          color: '#222', 
                           letterSpacing: 1
                         }}
                       >
@@ -276,11 +276,11 @@ const Dashboard = () => {
                       height: 320,
                       display: 'flex',
                       flexDirection: 'column',
-                      bgcolor: '#fff1e6', // match Avg. Response Time in Analytics
+                      bgcolor: '#fff1e6', 
                       borderRadius: 4,
                       overflow: 'hidden',
                       position: 'relative',
-                      boxShadow: '0 4px 16px 0 rgba(251,192,45,0.08)'
+                      boxShadow: '0 8px 32px 0 rgba(251,192,45,0.15)'
                     }}
                   >
                     {/* Header */}
