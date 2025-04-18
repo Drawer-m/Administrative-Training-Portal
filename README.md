@@ -6,7 +6,7 @@
 
 A full-fledged administrative interface where administrators can test, monitor, and improve an AI-powered educational chatbot. This portal enables administrators to analyze chatbot performance, manage low-confidence responses, and enhance the AI through training data input.
 
-![Dashboard Screenshot](https://via.placeholder.com/800x450?text=AdminBot+Dashboard)
+![Dashboard Screenshot](./assets/roc-curve-dashboard.png)
 
 ## 🚀 Live Demo
 
@@ -20,8 +20,7 @@ A full-fledged administrative interface where administrators can test, monitor, 
 
 ### 🔒 Authentication
 - A basic simulated authentication has been implemented using hardcoded credentials.
-- Implemented a protected training portal secured by a login page, featuring clear and user-friendly error messages for failed authentication attempts.
-
+- Implemented a protected training portal secured by a login page, featuring clear and user-friendly error messages for failed  authentication attempts.
 
 ### 🤖 Chatbot Testing Interface
 - Real-time AI-powered responses using Google's Gemini API
