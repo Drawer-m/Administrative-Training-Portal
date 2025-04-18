@@ -13,7 +13,7 @@ import {
   Stack
 } from '@mui/material';
 
-function Login() {
+function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,15 +24,18 @@ function Login() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+    console.log('Attempting login with:', username, password); // Debug log
+
     setTimeout(() => {
       if (username === 'admin' && password === 'admin123') {
         localStorage.setItem('isLoggedIn', 'true');
         setIsLoading(false);
-        navigate('/dashboard', { replace: true });
+        if (onLogin) onLogin(); // Notify App to update login state
+        // navigate('/dashboard', { replace: true }); // Not needed, App will redirect
       } else {
         setError('Invalid username or password. Try admin/admin123.');
         setIsLoading(false);
+        console.log('Login failed'); // Debug log
       }
     }, 1000);
   };
