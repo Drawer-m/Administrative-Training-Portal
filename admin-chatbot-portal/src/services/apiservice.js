@@ -4,7 +4,7 @@
  * @returns {Promise<{response: string, confidence: number}>} - Response text and confidence score
  */
 export async function getGeminiResponse(prompt) {
-  const API_KEY = "AIzaSyAtlpFbcYWA3WsjK334iJXWK7V0vg5QtNQ"; // Your API key
+  const API_KEY = "AIzaSyCwC8uFKQ-wB6Cy6xUflJhG43z5yWxkM90"; // Updated API key
   // Update the model name to a simpler version
   const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
 
