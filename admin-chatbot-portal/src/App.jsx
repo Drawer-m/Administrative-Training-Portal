@@ -36,7 +36,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLogin={() => setIsLoggedIn(true)} />} />
+        {/* <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLogin={() => setIsLoggedIn(true)} />} /> */}
+        <Route path="/" element={<Login onLogin={() => setIsLoggedIn(true)} />} />
         <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

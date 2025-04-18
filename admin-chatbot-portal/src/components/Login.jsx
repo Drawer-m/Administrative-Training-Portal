@@ -31,7 +31,7 @@ function Login({ onLogin }) {
         localStorage.setItem('isLoggedIn', 'true');
         setIsLoading(false);
         if (onLogin) onLogin(); // Notify App to update login state
-        // navigate('/dashboard', { replace: true }); // Not needed, App will redirect
+        navigate('/dashboard', { replace: true });
       } else {
         setError('Invalid username or password. Try admin/admin123.');
         setIsLoading(false);
