@@ -20,6 +20,8 @@ A full-fledged administrative interface where administrators can test, monitor, 
 
 ### 🔒 Authentication
 - A basic simulated authentication has been implemented using hardcoded credentials.
+- Implemented a protected training portal secured by a login page, featuring clear and user-friendly error messages for failed authentication attempts.
+
 
 ### 🤖 Chatbot Testing Interface
 - Real-time AI-powered responses using Google's Gemini API
