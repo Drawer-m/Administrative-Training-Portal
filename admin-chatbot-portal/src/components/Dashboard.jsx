@@ -11,7 +11,6 @@ import Analytics from './Analytics';
 import Sidebar from './Sidebar';
 import AccessibilityPanel from './AccessibilityPanel';
 
-
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement);
 
 const MOBILE_BREAKPOINT = 768;
@@ -28,7 +27,6 @@ const Dashboard = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  
   const [recentQueries] = useState([
     { question: "How do I reset my password?", response: "You can reset your password via the portal.", confidence: 92, time: "2 min ago" },
     { question: "When is the last date for registration?", response: "Registration closes on June 30.", confidence: 75, time: "10 min ago" },
@@ -62,7 +60,6 @@ const Dashboard = () => {
     }, 1000);
   };
 
-  
   const confidenceTrend = [80, 78, 82, 75, 85, 90, 88];
   const avgConfidence = Math.round(confidenceTrend.reduce((a, b) => a + b, 0) / confidenceTrend.length);
   const unresolvedLowConfidence = lowConfidenceQueries.length;
@@ -70,17 +67,14 @@ const Dashboard = () => {
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down('md'));
 
-  
   const sidebarWidth = isMobile
     ? 0
     : isSidebarExpanded
       ? DASHBOARD_SIDEBAR_WIDTH_EXPANDED
       : DASHBOARD_SIDEBAR_WIDTH_COLLAPSED;
 
-  
   const mainMarginLeft = isMobile ? 0 : `${sidebarWidth + DASHBOARD_MAIN_GAP}px`;
 
- 
   const mockPerformance = {
     responseTimes: [1.2, 1.0, 0.9, 1.1, 0.8, 1.3, 1.0],
     confidenceTrend: [80, 78, 82, 75, 85, 90, 88],
@@ -177,11 +171,27 @@ const Dashboard = () => {
         }}
       >
         <Box sx={{ maxWidth: 1200, mx: 0 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Admin Training Portal
-          </Typography>
           {activeTab === '' && (
             <section>
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                align="center"
+                sx={{
+                  fontWeight: 800,
+                  letterSpacing: '0.5px',
+                  mb: 3,
+                  fontSize: { xs: '2rem', md: '2.5rem' },
+                  background: 'linear-gradient(90deg, #1976d2 0%, #9c27b0 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textFillColor: 'transparent',
+                }}
+              >
+                Admin Dashboard
+              </Typography>
+              
               {/* Metrics Cards */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={4}>
@@ -316,7 +326,7 @@ const Dashboard = () => {
                         variant="h6"
                         fontWeight="medium"
                         sx={{
-                          color: '#222', // black text
+                          color: '#222', 
                           letterSpacing: 1
                         }}
                       >
@@ -333,17 +343,11 @@ const Dashboard = () => {
           )}
           {activeTab === 'chatbot' && (
             <section>
-              <Typography variant="h6" component="h2" gutterBottom>
-                Chatbot Testing
-              </Typography>
               <Chatbot onLowConfidence={handleLowConfidence} />
             </section>
           )}
           {activeTab === 'low-confidence' && (
             <section>
-              <Typography variant="h6" component="h2" gutterBottom>
-                Low Confidence Queries
-              </Typography>
               <LowConfidence 
                 queries={lowConfidenceQueries} 
                 onResolve={handleResolveQuery}
@@ -353,17 +357,11 @@ const Dashboard = () => {
           )}
           {activeTab === 'analytics' && (
             <section>
-              <Typography variant="h6" component="h2" gutterBottom>
-                Analytics Dashboard
-              </Typography>
               <Analytics queries={lowConfidenceQueries} />
             </section>
           )}
           {activeTab === 'accessibility' && (
             <section>
-              <Typography variant="h6" component="h2" gutterBottom>
-                Accessibility Settings
-              </Typography>
               <AccessibilityPanel />
             </section>
           )}

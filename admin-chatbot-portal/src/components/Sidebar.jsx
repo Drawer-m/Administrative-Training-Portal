@@ -7,7 +7,7 @@ import {
   FaHome, FaRobot, FaExclamationTriangle, FaChartBar, FaSignOutAlt, FaBars
 } from 'react-icons/fa';
 import { Brightness4, Brightness7, Contrast, AccessibilityNew } from '@mui/icons-material';
-import { useThemeMode } from './Accesibility';
+import { useThemeMode } from './Accessibility';
 
 const navItems = [
   { key: '', icon: <FaHome />, label: 'Dashboard' },
@@ -31,9 +31,17 @@ const Sidebar = ({
 }) => {
   const theme = useTheme();
   const sidebarRef = useRef();
-  const { mode, setMode } = useThemeMode();
+  const { mode } = useThemeMode();
 
-  // Close sidebar on outside click (mobile)
+  // Determine background color based on theme mode
+  const getSidebarBgColor = () => {
+    switch(mode) {
+      case 'dark': return '#1e1e1e';
+      case 'high-contrast': return '#121212';
+      default: return '#e3f2fd'; // light mode
+    }
+  };
+
   useEffect(() => {
     if (!isMobile || !mobileOpen) return;
     const handleClick = (e) => {
@@ -45,7 +53,6 @@ const Sidebar = ({
     return () => document.removeEventListener('mousedown', handleClick);
   }, [isMobile, mobileOpen, setMobileOpen]);
 
-  // Keyboard navigation: ESC to close mobile drawer
   useEffect(() => {
     if (!isMobile || !mobileOpen) return;
     const handleKey = (e) => {
@@ -55,7 +62,6 @@ const Sidebar = ({
     return () => document.removeEventListener('keydown', handleKey);
   }, [isMobile, mobileOpen, setMobileOpen]);
 
-  // Drawer content
   const drawerContent = (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
@@ -192,7 +198,7 @@ const Sidebar = ({
             '& .MuiDrawer-paper': { 
               boxSizing: 'border-box', 
               width: EXPANDED_WIDTH,
-              bgcolor: '#e3f2fd',
+              bgcolor: getSidebarBgColor(),
               boxShadow: 3
             },
           }}
@@ -211,7 +217,7 @@ const Sidebar = ({
               width: isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
               boxSizing: 'border-box',
               overflowX: 'hidden',
-              bgcolor: '#e3f2fd',
+              bgcolor: getSidebarBgColor(),
               transition: theme.transitions.create('width', {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen,

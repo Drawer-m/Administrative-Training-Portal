@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { ThemeProvider } from './components/Accessibility'; 
 import Login from './components/Login.jsx'; 
 import Dashboard from './components/Dashboard.jsx'; 
 
@@ -34,14 +35,15 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLogin={() => setIsLoggedIn(true)} />} /> */}
-        <Route path="/" element={<Login onLogin={() => setIsLoggedIn(true)} />} />
-        <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/" />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login onLogin={() => setIsLoggedIn(true)} />} />
+          <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/" />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

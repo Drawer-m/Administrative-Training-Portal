@@ -1,0 +1,66 @@
+/* Global theme variables */
+:root {
+  --focus-color: #2563eb;
+}
+
+/* Light theme */
+.theme-light {
+  --bg-color: #f8ede3;
+  --text-color: #333;
+  --surface-color: #ffffff;
+  --border-color: #e0e0e0;
+}
+
+/* Dark theme */
+.theme-dark {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --surface-color: #1e1e1e;
+  --border-color: #444;
+}
+
+/* High contrast theme */
+.theme-high-contrast {
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --surface-color: #121212;
+  --border-color: #ffffff;
+}
+
+/* Apply theme colors to focus outlines */
+:focus {
+  outline: 2px dashed var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* Hide focus outlines when disabled */
+.no-focus-outline :focus {
+  outline: none !important;
+}
+
+/* Theme transitions */
+body {
+  transition: background-color 0.3s, color 0.3s;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Use custom background when specified */
+body.using-custom-bg {
+  /* Custom background overrides theme background */
+}
+
+/* Ensure buttons maintain proper contrast */
+.theme-high-contrast button {
+  border: 1px solid white;
+}
+
+/* Enhance readability in high contrast mode */
+.theme-high-contrast h1, 
+.theme-high-contrast h2, 
+.theme-high-contrast h3,
+.theme-high-contrast h4,
+.theme-high-contrast h5,
+.theme-high-contrast h6 {
+  color: #ffff00;
+}

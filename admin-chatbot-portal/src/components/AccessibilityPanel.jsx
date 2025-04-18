@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Paper, Typography, Divider, Slider, Select, MenuItem, FormControl, InputLabel, IconButton, Tooltip, Grid, Switch, Stack } from '@mui/material';
 import { Brightness4, Brightness7, Contrast, TextFields, FormatLineSpacing, FormatBold, FormatItalic, FormatColorFill, Visibility, VisibilityOff } from '@mui/icons-material';
-import { useThemeMode } from './Accesibility';
+import { useThemeMode } from './Accessibility';
 
 const themeOptions = [
   { key: 'light', label: 'Light', icon: <Brightness7 /> },
@@ -36,7 +36,7 @@ const lineHeightOptions = [
 ];
 
 const AccessibilityPanel = () => {
-  const { mode, setMode } = useThemeMode();
+  const { mode, setMode, currentTheme } = useThemeMode();
   const [fontSize, setFontSize] = useState(16);
   const [fontFamily, setFontFamily] = useState('system-ui');
   const [lineHeight, setLineHeight] = useState(1.5);
@@ -44,6 +44,27 @@ const AccessibilityPanel = () => {
   const [italic, setItalic] = useState(false);
   const [bgColor, setBgColor] = useState('#f8ede3');
   const [showFocusOutline, setShowFocusOutline] = useState(true);
+  const [useCustomColors, setUseCustomColors] = useState(false);
+
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem('accessibilityFontSize');
+    const savedFontFamily = localStorage.getItem('accessibilityFontFamily');
+    const savedLineHeight = localStorage.getItem('accessibilityLineHeight');
+    const savedBold = localStorage.getItem('accessibilityBold');
+    const savedItalic = localStorage.getItem('accessibilityItalic');
+    const savedShowFocusOutline = localStorage.getItem('accessibilityShowFocusOutline');
+    const savedUseCustomColors = localStorage.getItem('accessibilityUseCustomColors');
+    const savedBgColor = localStorage.getItem('accessibilityBgColor');
+
+    if (savedFontSize) setFontSize(parseInt(savedFontSize));
+    if (savedFontFamily) setFontFamily(savedFontFamily);
+    if (savedLineHeight) setLineHeight(parseFloat(savedLineHeight));
+    if (savedBold) setBold(savedBold === 'true');
+    if (savedItalic) setItalic(savedItalic === 'true');
+    if (savedShowFocusOutline) setShowFocusOutline(savedShowFocusOutline === 'true');
+    if (savedUseCustomColors) setUseCustomColors(savedUseCustomColors === 'true');
+    if (savedBgColor) setBgColor(savedBgColor);
+  }, []);
 
   useEffect(() => {
     document.body.style.fontSize = `${fontSize}px`;
@@ -51,9 +72,42 @@ const AccessibilityPanel = () => {
     document.body.style.lineHeight = lineHeight;
     document.body.style.fontWeight = bold ? 'bold' : 'normal';
     document.body.style.fontStyle = italic ? 'italic' : 'normal';
-    document.body.style.background = bgColor;
-    document.body.style.outline = showFocusOutline ? '' : 'none';
-  }, [fontSize, fontFamily, lineHeight, bold, italic, bgColor, showFocusOutline]);
+
+    if (useCustomColors) {
+      document.body.style.setProperty('--bg-color', bgColor);
+      document.body.style.background = bgColor;
+      document.body.classList.add('using-custom-bg');
+    } else {
+      document.body.classList.remove('using-custom-bg');
+      document.body.style.background = '';
+      document.body.style.removeProperty('--custom-bg');
+    }
+
+    if (showFocusOutline) {
+      document.body.classList.remove('no-focus-outline');
+    } else {
+      document.body.classList.add('no-focus-outline');
+    }
+
+    localStorage.setItem('accessibilityFontSize', fontSize);
+    localStorage.setItem('accessibilityFontFamily', fontFamily);
+    localStorage.setItem('accessibilityLineHeight', lineHeight);
+    localStorage.setItem('accessibilityBold', bold);
+    localStorage.setItem('accessibilityItalic', italic);
+    localStorage.setItem('accessibilityShowFocusOutline', showFocusOutline);
+    localStorage.setItem('accessibilityUseCustomColors', useCustomColors);
+    localStorage.setItem('accessibilityBgColor', bgColor);
+  }, [fontSize, fontFamily, lineHeight, bold, italic, bgColor, showFocusOutline, useCustomColors, mode]);
+
+  const handleThemeChange = (newMode) => {
+    setMode(newMode);
+    setUseCustomColors(false);
+  };
+
+  const handleCustomBgColor = (color) => {
+    setBgColor(color);
+    setUseCustomColors(true);
+  };
 
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
@@ -75,7 +129,7 @@ const AccessibilityPanel = () => {
                     <Tooltip key={option.key} title={option.label}>
                       <IconButton
                         color={mode === option.key ? 'primary' : 'default'}
-                        onClick={() => setMode(option.key)}
+                        onClick={() => handleThemeChange(option.key)}
                         aria-label={option.label}
                         sx={{
                           bgcolor: mode === option.key ? 'action.selected' : 'background.paper',
@@ -90,23 +144,35 @@ const AccessibilityPanel = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
-                  Background Color
+                  Custom Background Color
                 </Typography>
-                <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
-                  {colorOptions.map(opt => (
-                    <Tooltip key={opt.key} title={opt.label}>
-                      <IconButton
-                        onClick={() => setBgColor(opt.key)}
-                        sx={{
-                          bgcolor: opt.key,
-                          border: bgColor === opt.key ? '2px solid #1976d2' : '1px solid #eee',
-                          width: 28,
-                          height: 28,
-                        }}
-                        aria-label={opt.label}
-                      />
-                    </Tooltip>
-                  ))}
+                <Stack direction="column" spacing={1} sx={{ mb: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2">Use Custom Colors:</Typography>
+                    <Switch
+                      checked={useCustomColors}
+                      onChange={(e) => setUseCustomColors(e.target.checked)}
+                      color="primary"
+                    />
+                  </Stack>
+                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                    {colorOptions.map(opt => (
+                      <Tooltip key={opt.key} title={opt.label}>
+                        <IconButton
+                          onClick={() => handleCustomBgColor(opt.key)}
+                          disabled={!useCustomColors}
+                          sx={{
+                            bgcolor: opt.key,
+                            border: bgColor === opt.key && useCustomColors ? '2px solid #1976d2' : '1px solid #eee',
+                            width: 28,
+                            height: 28,
+                            opacity: useCustomColors ? 1 : 0.6,
+                          }}
+                          aria-label={opt.label}
+                        />
+                      </Tooltip>
+                    ))}
+                  </Stack>
                 </Stack>
               </Grid>
               <Grid item xs={12} sm={6}>
