@@ -1,6 +1,15 @@
 /* Global theme variables */
 :root {
   --focus-color: #2563eb;
+  --sidebar-bg: #1E1E2F;
+  --sidebar-text: #F5F5F5;
+  --sidebar-active: #7C3AED;
+  --sidebar-hover: rgba(124, 58, 237, 0.12);
+  --header-bg-start: #1F1F2C;
+  --header-bg-end: #262637;
+  --header-text: #F0F0F0;
+  --header-text-secondary: #E0E0E0;
+  --header-hover: #7C3AED;
 }
 
 /* Light theme */
@@ -63,4 +72,14 @@ body.using-custom-bg {
 .theme-high-contrast h5,
 .theme-high-contrast h6 {
   color: #ffff00;
+}
+
+/* Fix for header-sidebar connection */
+.MuiDrawer-root + .MuiBox-root {
+  margin-left: 0 !important; /* Ensure no gap between sidebar and content */
+}
+
+/* Ensure the app bar connects properly with the sidebar */
+.MuiAppBar-root {
+  margin-left: 0 !important;
 }

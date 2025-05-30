@@ -1,941 +1,572 @@
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement } from 'chart.js';
+import { useState, useEffect } from 'react';
 import {
-  Box, Grid, Paper, Typography, List, ListItem, ListItemText, Divider, useTheme, Container, Stack, alpha
+  Box, Grid, Paper, Typography, Container, Stack, useTheme, alpha,
+  Chip, Avatar, Switch, FormControlLabel, IconButton, Tooltip as MUITooltip,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  LinearProgress, Card, CardContent, Tabs, Tab
 } from '@mui/material';
+import {
+  TrendingUp, AccessTime, ThumbUp, Warning, 
+  ArrowUpward, ArrowDownward, Info, Timeline,
+  PieChart as PieChartIcon, Autorenew, BarChart
+} from '@mui/icons-material';
 import { useThemeMode } from './Accessibility';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement);
-
-const Analytics = ({ queries }) => {
+// A simple animated bar chart component
+const AnimatedBarChart = ({ data, labels, height = 200, barColor = '#3f51b5' }) => {
   const theme = useTheme();
   const { mode } = useThemeMode();
-
-  const generateMockData = () => {
-    return {
-      dailyQueries: [45, 52, 38, 60, 55, 78, 42],
-      responseTime: [0.8, 0.7, 0.9, 0.6, 0.8, 0.7, 0.5],
-      categories: {
-        'Student Services': 35,
-        'Course Information': 28,
-        'Technical Support': 18,
-        'Faculty Questions': 12,
-        'Other': 7
-      }
-    };
-  };
-
-  const mockData = generateMockData();
-
-  const confidenceData = {
-    high: queries.filter(q => q.confidence >= 70).length,
-    medium: queries.filter(q => q.confidence >= 50 && q.confidence < 70).length,
-    low: queries.filter(q => q.confidence < 50).length,
-    total: queries.length + mockData.dailyQueries.reduce((acc, val) => acc + val, 0) - (queries.length)
-  };
-
-  const getChartColors = () => {
-    const isHighContrast = mode === 'high-contrast';
-    const isDark = mode === 'dark';
-
-    return {
-      primary: {
-        main: isHighContrast ? '#ffffff' : theme.palette.primary.main,
-        light: isHighContrast ? '#aaaaaa' : isDark ? alpha(theme.palette.primary.main, 0.7) : theme.palette.primary.light,
-      },
-      secondary: {
-        main: isHighContrast ? '#ffff00' : theme.palette.secondary.main,
-        light: isHighContrast ? '#aaaa00' : isDark ? alpha(theme.palette.secondary.main, 0.7) : theme.palette.secondary.light,
-      },
-      error: {
-        main: isHighContrast ? '#ff6666' : theme.palette.error.main,
-        light: isHighContrast ? '#aa4444' : isDark ? alpha(theme.palette.error.main, 0.7) : theme.palette.error.light,
-      },
-      warning: {
-        main: isHighContrast ? '#ffaa00' : theme.palette.warning.main,
-        light: isHighContrast ? '#aa7700' : isDark ? alpha(theme.palette.warning.main, 0.7) : theme.palette.warning.light,
-      },
-      success: {
-        main: isHighContrast ? '#66ff66' : theme.palette.success.main,
-        light: isHighContrast ? '#44aa44' : isDark ? alpha(theme.palette.success.main, 0.7) : theme.palette.success.light,
-      },
-      info: {
-        main: isHighContrast ? '#66ffff' : theme.palette.info.main,
-        light: isHighContrast ? '#44aaaa' : isDark ? alpha(theme.palette.info.main, 0.7) : theme.palette.info.light,
-      },
-      text: isHighContrast ? '#ffffff' : isDark ? '#e0e0e0' : '#333333',
-      grid: isHighContrast ? '#ffffff' : isDark ? '#555555' : '#e0e0e0',
-    };
-  };
-
-  const chartColors = getChartColors();
-
-  const barData = {
-    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    datasets: [
-      {
-        label: 'Queries per Day',
-        data: mockData.dailyQueries,
-        backgroundColor: chartColors.primary.light,
-        borderColor: chartColors.primary.main,
-        borderWidth: 1,
-      }
-    ]
-  };
-
-  const lineData = {
-    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    datasets: [
-      {
-        label: 'Avg. Response Time (s)',
-        data: mockData.responseTime,
-        borderColor: chartColors.secondary.main,
-        backgroundColor: chartColors.secondary.light,
-        tension: 0.1,
-        fill: false
-      }
-    ]
-  };
-
-  const doughnutData = {
-    labels: Object.keys(mockData.categories),
-    datasets: [{
-      data: Object.values(mockData.categories),
-      backgroundColor: [
-        chartColors.error.light,
-        chartColors.primary.light,
-        chartColors.warning.light,
-        chartColors.success.light,
-        chartColors.info.light
-      ],
-      borderWidth: mode === 'high-contrast' ? 2 : 1,
-      borderColor: mode === 'high-contrast' ? '#ffffff' : 'transparent'
-    }]
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    layout: { padding: 10 },
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          padding: 20,
-          color: chartColors.text
-        }
-      },
-      tooltip: {
-        backgroundColor: mode === 'dark' ? '#333' : mode === 'high-contrast' ? '#000' : '#fff',
-        titleColor: mode === 'dark' || mode === 'high-contrast' ? '#fff' : '#333',
-        bodyColor: mode === 'dark' || mode === 'high-contrast' ? '#eee' : '#555',
-        borderColor: chartColors.grid,
-        borderWidth: 1
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          color: alpha(chartColors.grid, 0.2)
-        },
-        ticks: {
-          color: chartColors.text
-        }
-      },
-      y: {
-        grid: {
-          color: alpha(chartColors.grid, 0.2)
-        },
-        ticks: {
-          color: chartColors.text
-        }
-      }
-    }
-  };
-
-  const getSurfaceColor = (colorName) => {
-    if (mode === 'high-contrast') {
-      return 'var(--surface-color)';
-    } else if (mode === 'dark') {
-      return alpha(theme.palette[colorName].main, 0.15);
-    } else {
-      return theme.palette[colorName].light;
-    }
-  };
-
-  const getHeadingStyle = () => {
-    if (mode === 'high-contrast') {
-      return {
-        color: '#ffff00',
-        textShadow: '0 0 5px rgba(255,255,255,0.5)',
-        borderBottom: '2px solid #ffff00',
-        pb: 1,
-        mb: 2
-      };
-    } else if (mode === 'dark') {
-      return {
-        background: 'linear-gradient(90deg, #90caf9 0%, #ce93d8 100%)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-        textFillColor: 'transparent',
-        textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-        pb: 1,
-        mb: 2
-      };
-    } else {
-      return {
-        background: 'linear-gradient(90deg, #1976d2 0%, #9c27b0 100%)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-        textFillColor: 'transparent',
-        borderBottom: '2px solid #1976d2',
-        pb: 1,
-        mb: 2
-      };
-    }
-  };
-
-  const getSectionHeadingStyle = (color) => {
-    const baseStyles = {
-      fontSize: '1.5rem',
-      fontWeight: 700,
-      display: 'inline-block',
-      position: 'relative',
-      mb: 2,
-      pl: 2,
-      '&:before': {
-        content: '""',
-        position: 'absolute',
-        left: 0,
-        top: '50%',
-        transform: 'translateY(-50%)',
-        height: '80%',
-        width: '4px',
-        borderRadius: '4px',
-      }
-    };
+  const isDark = mode === 'dark';
+  const [animated, setAnimated] = useState(false);
+  
+  useEffect(() => {
+    // Trigger animation after component mounts
+    const timer = setTimeout(() => {
+      setAnimated(true);
+    }, 300);
     
-    if (mode === 'high-contrast') {
-      return {
-        ...baseStyles,
-        color: '#ffffff',
-        '&:before': {
-          ...baseStyles['&:before'],
-          backgroundColor: '#ffff00',
-        }
-      };
-    }
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const maxValue = Math.max(...data);
+  
+  return (
+    <Box sx={{ height, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mt: 2 }}>
+      {data.map((value, index) => {
+        const percentage = (value / maxValue) * 100;
+        
+        return (
+          <Box 
+            key={index} 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center',
+              width: `${100/data.length - 2}%`, 
+            }}
+          >
+            <Box 
+              sx={{ 
+                height: animated ? `${percentage}%` : '0%',
+                width: '100%',
+                maxWidth: 40,
+                backgroundColor: barColor,
+                borderRadius: '4px 4px 0 0',
+                transition: 'height 1s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative',
+                '&:hover': {
+                  opacity: 0.8,
+                  cursor: 'pointer',
+                },
+                '&:hover::after': {
+                  content: `"${value}"`,
+                  position: 'absolute',
+                  top: -30,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: isDark ? theme.palette.grey[800] : theme.palette.grey[100],
+                  padding: '2px 6px',
+                  borderRadius: 1,
+                  fontSize: '12px',
+                  zIndex: 10
+                }
+              }}
+            />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+              {labels[index]}
+            </Typography>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+};
+
+// Simple animated pie chart component using CSS
+const AnimatedPieChart = ({ data, colors, labels }) => {
+  const [animated, setAnimated] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimated(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const total = data.reduce((acc, val) => acc + val, 0);
+  let cumulativePercentage = 0;
+  
+  return (
+    <Box sx={{ textAlign: 'center', position: 'relative' }}>
+      <Box 
+        sx={{ 
+          width: 200, 
+          height: 200, 
+          borderRadius: '50%', 
+          position: 'relative', 
+          overflow: 'hidden',
+          margin: '0 auto',
+          transform: animated ? 'scale(1)' : 'scale(0.5)',
+          opacity: animated ? 1 : 0,
+          transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
+        {data.map((value, index) => {
+          const percentage = (value / total) * 100;
+          const previousCumulative = cumulativePercentage;
+          cumulativePercentage += percentage;
+          
+          return (
+            <Box 
+              key={index} 
+              sx={{ 
+                position: 'absolute',
+                top: 0, 
+                left: 0,
+                width: '100%', 
+                height: '100%',
+                background: `conic-gradient(
+                  transparent ${previousCumulative}%, 
+                  ${colors[index]} ${previousCumulative}%, 
+                  ${colors[index]} ${cumulativePercentage}%, 
+                  transparent ${cumulativePercentage}%
+                )`,
+              }}
+            />
+          );
+        })}
+        
+        {/* White center circle for donut effect */}
+        <Box sx={{ 
+          position: 'absolute', 
+          top: '25%', 
+          left: '25%', 
+          width: '50%', 
+          height: '50%', 
+          borderRadius: '50%', 
+          backgroundColor: 'background.paper' 
+        }} />
+      </Box>
+      
+      {/* Legend */}
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        justifyContent="center" 
+        sx={{ mt: 3 }}
+      >
+        {data.map((value, index) => (
+          <Stack key={index} direction="row" alignItems="center" spacing={0.5}>
+            <Box 
+              sx={{ 
+                width: 12, 
+                height: 12, 
+                borderRadius: '2px', 
+                backgroundColor: colors[index] 
+              }} 
+            />
+            <Typography variant="caption">{labels[index]}: {Math.round((value / total) * 100)}%</Typography>
+          </Stack>
+        ))}
+      </Stack>
+    </Box>
+  );
+};
+
+const Analytics = () => {
+  const theme = useTheme();
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
+  
+  // Demo data
+  const [timeRange, setTimeRange] = useState('week');
+  const [tabValue, setTabValue] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+  
+  useEffect(() => {
+    setAnimateIn(true);
+  }, []);
+  
+  // Handle time range change with loading effect
+  const handleTimeRangeChange = (e) => {
+    setIsLoading(true);
+    const newTimeRange = e.target.checked ? 'year' : 'week';
+    
+    // Simulate data loading
+    setTimeout(() => {
+      setTimeRange(newTimeRange);
+      setIsLoading(false);
+    }, 800);
+  };
+  
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+  
+  // Generate sample data
+  const generateData = () => {
+    // Total queries data
+    const totalQueries = 1248;
+    const avgResponseTime = 0.75;
+    const confidenceRate = 87;
+    const lowConfidenceCount = 48;
+    
+    // Chart data based on time range
+    const barLabels = timeRange === 'week' 
+      ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const queryData = timeRange === 'week'
+      ? [45, 62, 58, 71, 82, 42, 55]
+      : [120, 145, 132, 165, 190, 210, 185, 220, 240, 195, 205, 230];
+    
+    const confidenceData = timeRange === 'week'
+      ? [82, 88, 76, 92, 86, 78, 90]
+      : [75, 79, 82, 80, 85, 88, 86, 90, 92, 89, 84, 87];
+    
+    // Confidence distribution for pie chart
+    const confidenceDistribution = [68, 21, 11]; // High, Medium, Low
+    
+    // Recent interactions data
+    const recentInteractions = [
+      { id: 1, query: "How do I reset my password?", time: "2 mins ago", confidence: 94, status: "Complete" },
+      { id: 2, query: "When is the next faculty meeting?", time: "10 mins ago", confidence: 76, status: "Complete" },
+      { id: 3, query: "Can I change my course schedule?", time: "25 mins ago", confidence: 45, status: "Low Confidence" },
+      { id: 4, query: "What are the library hours this weekend?", time: "32 mins ago", confidence: 88, status: "Complete" },
+      { id: 5, query: "How do I submit assignments online?", time: "1 hour ago", confidence: 92, status: "Complete" }
+    ];
     
     return {
-      ...baseStyles,
-      '&:before': {
-        ...baseStyles['&:before'],
-        backgroundColor: theme.palette[color].main,
-      }
+      totalQueries,
+      avgResponseTime,
+      confidenceRate,
+      lowConfidenceCount,
+      barLabels,
+      queryData,
+      confidenceData,
+      confidenceDistribution,
+      recentInteractions
     };
   };
+  
+  const data = generateData();
 
   return (
-    <Box sx={{ 
-      bgcolor: 'transparent', 
-      py: 2, 
-      px: { xs: 1, md: 2 } 
-    }}>
-      <Container 
-        maxWidth="xl" 
-        sx={{ px: { xs: 1, sm: 2, md: 3 } }} 
-      >
-        <Typography 
-          variant="h4" 
-          component="h1" 
-          align="center"
-          sx={{
-            ...getHeadingStyle(),
-            fontSize: { xs: '2rem', md: '2.5rem' },
-            fontWeight: 800,
-            letterSpacing: '0.5px',
-            mb: 3
-          }}
-        >
-          Analytics Dashboard
-        </Typography>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 2.5,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                textAlign: 'center',
-                bgcolor: getSurfaceColor('primary'),
-                border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                borderRadius: 2,
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-3px)',
-                  boxShadow: 6
-                }
-              }}
-            >
-              <Typography 
-                variant="caption" 
-                color="text.secondary" 
-                sx={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: 500, 
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                Total Queries
-              </Typography>
-              <Typography 
-                variant="h4" 
-                fontWeight="bold" 
-                sx={{ 
-                  mt: 1,
-                  fontSize: { xs: '1.8rem', md: '2.2rem' }, 
-                  color: mode === 'high-contrast' ? '#ffffff' : theme.palette.primary.main  
-                }}
-              >
-                {confidenceData.total}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 2.5,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                textAlign: 'center',
-                bgcolor: getSurfaceColor('success'),
-                border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                borderRadius: 2,
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-3px)',
-                  boxShadow: 6
-                }
-              }}
-            >
-              <Typography 
-                variant="caption" 
-                color="text.secondary"
-                sx={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: 500, 
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                High Confidence
-              </Typography>
-              <Typography 
-                variant="h4" 
-                fontWeight="bold" 
-                color="success.main" 
-                sx={{ 
-                  mt: 1,
-                  fontSize: { xs: '1.8rem', md: '2.2rem' }
-                }}
-              >
-                {confidenceData.high}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 2.5,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                textAlign: 'center',
-                bgcolor: getSurfaceColor('warning'),
-                border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                borderRadius: 2,
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-3px)',
-                  boxShadow: 6
-                }
-              }}
-            >
-              <Typography 
-                variant="caption" 
-                color="text.secondary"
-                sx={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: 500, 
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                Medium Confidence
-              </Typography>
-              <Typography 
-                variant="h4" 
-                fontWeight="bold" 
-                color="warning.main" 
-                sx={{ 
-                  mt: 1,
-                  fontSize: { xs: '1.8rem', md: '2.2rem' }
-                }}
-              >
-                {confidenceData.medium}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 2.5,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                textAlign: 'center',
-                bgcolor: getSurfaceColor('error'),
-                border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                borderRadius: 2,
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-3px)',
-                  boxShadow: 6
-                }
-              }}
-            >
-              <Typography 
-                variant="caption" 
-                color="text.secondary"
-                sx={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: 500, 
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                Low Confidence
-              </Typography>
-              <Typography 
-                variant="h4" 
-                fontWeight="bold" 
-                color="error.main" 
-                sx={{ 
-                  mt: 1,
-                  fontSize: { xs: '1.8rem', md: '2.2rem' }
-                }}
-              >
-                {confidenceData.low}
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
-
-        <Typography sx={getSectionHeadingStyle('primary')}>
-          Performance Analytics
-        </Typography>
-
-        <Stack spacing={2.5}>
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} md={6}>
-              <Paper
-                elevation={4}
-                sx={{
-                  p: 0,
-                  height: { xs: 350, md: 380 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  bgcolor: 'var(--surface-color)',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                  boxShadow: mode === 'dark' ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.1)'
-                }}
-              >
-                <Box
-                  sx={{
-                    bgcolor: mode === 'dark' ? 'primary.dark' : 'primary.light',
-                    px: 3,
-                    py: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderBottom: `1px solid var(--border-color)`
-                  }}
-                >
-                  <Box
-                    sx={{
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: 40,
-                      height: 40,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mr: 2,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                    }}
-                  >
-                    <span role="img" aria-label="bar-chart" style={{ fontSize: '1.3rem' }}>
-                      📈
-                    </span>
-                  </Box>
-                  <Typography 
-                    variant="h6" 
-                    fontWeight="bold" 
-                    color="var(--text-color)"
-                    sx={{
-                      textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      fontSize: '1.1rem'
-                    }}
-                  >
-                    Queries per Day
-                  </Typography>
-                </Box>
-                <Box sx={{ flex: 1, px: 2, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Bar data={barData} options={chartOptions} />
-                </Box>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Paper
-                elevation={4}
-                sx={{
-                  p: 0,
-                  height: { xs: 350, md: 380 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  bgcolor: 'var(--surface-color)',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                  boxShadow: mode === 'dark' ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.1)'
-                }}
-              >
-                <Box
-                  sx={{
-                    bgcolor: mode === 'dark' ? 'secondary.dark' : 'secondary.light',
-                    px: 3,
-                    py: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderBottom: `1px solid var(--border-color)`
-                  }}
-                >
-                  <Box
-                    sx={{
-                      bgcolor: 'secondary.main',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: 40,
-                      height: 40,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mr: 2,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                    }}
-                  >
-                    <span role="img" aria-label="line-chart" style={{ fontSize: '1.3rem' }}>
-                      ⏱️
-                    </span>
-                  </Box>
-                  <Typography 
-                    variant="h6" 
-                    fontWeight="bold" 
-                    color="var(--text-color)"
-                    sx={{
-                      textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      fontSize: '1.1rem'
-                    }}
-                  >
-                    Avg. Response Time
-                  </Typography>
-                </Box>
-                <Box sx={{ flex: 1, px: 2, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Line data={lineData} options={chartOptions} />
-                </Box>
-              </Paper>
-            </Grid>
-          </Grid>
-
-          <Typography sx={getSectionHeadingStyle('info')} mt={2}>
-            Data Insights
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        mb: 4,
+        opacity: animateIn ? 1 : 0,
+        transform: animateIn ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out'
+      }}>
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              mb: 1,
+              backgroundImage: isDark 
+                ? 'linear-gradient(45deg, #6b73ff 30%, #50c9c3 90%)'
+                : 'linear-gradient(45deg, #2196F3 30%, #4a148c 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
+            Analytics Dashboard
           </Typography>
-
-          <Grid container spacing={2.5}>
-            <Grid item xs={12} md={6}>
-              <Paper
-                elevation={4}
-                sx={{
-                  p: 0,
-                  height: { xs: 350, md: 380 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  bgcolor: 'var(--surface-color)',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                  boxShadow: mode === 'dark' ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.1)'
-                }}
-              >
-                <Box
-                  sx={{
-                    bgcolor: mode === 'dark' ? 'info.dark' : 'info.light',
-                    px: 3,
-                    py: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderBottom: `1px solid var(--border-color)`
-                  }}
-                >
-                  <Box
-                    sx={{
-                      bgcolor: 'info.main',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: 40,
-                      height: 40,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mr: 2,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                    }}
-                  >
-                    <span role="img" aria-label="category" style={{ fontSize: '1.3rem' }}>
-                      📊
-                    </span>
-                  </Box>
-                  <Typography 
-                    variant="h6" 
-                    fontWeight="bold" 
-                    color="var(--text-color)"
-                    sx={{
-                      textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      fontSize: '1.1rem'
-                    }}
-                  >
-                    Query Categories
+          <Typography variant="body1" color="text.secondary">
+            Performance metrics and insights for your chatbot
+          </Typography>
+        </Box>
+        
+        <Stack direction="row" spacing={2} alignItems="center">
+          <FormControlLabel
+            control={
+              <Switch 
+                checked={timeRange === 'year'} 
+                onChange={handleTimeRangeChange} 
+                color="primary" 
+                disabled={isLoading}
+              />
+            }
+            label={
+              <Typography sx={{ display: 'flex', alignItems: 'center' }}>
+                {isLoading && <Autorenew fontSize="small" sx={{ mr: 0.5, animation: 'spin 1s linear infinite' }} />}
+                {timeRange === 'year' ? "Yearly View" : "Weekly View"}
+              </Typography>
+            }
+          />
+        </Stack>
+      </Box>
+      
+      {/* Stat Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {[
+          {
+            title: 'Total Queries',
+            value: data.totalQueries,
+            icon: <TrendingUp fontSize="small" />,
+            change: '+18.2%',
+            color: theme.palette.primary.main,
+            changeText: 'vs last week'
+          },
+          {
+            title: 'Avg. Response Time',
+            value: `${data.avgResponseTime}s`,
+            icon: <AccessTime fontSize="small" />,
+            change: '-7.4%',
+            color: '#FF9671',
+            changeText: 'faster than before',
+            isDown: true
+          },
+          {
+            title: 'Confidence Rate',
+            value: `${data.confidenceRate}%`,
+            icon: <ThumbUp fontSize="small" />,
+            change: '+5.1%',
+            color: '#50C9C3',
+            changeText: 'vs last month'
+          },
+          {
+            title: 'Low Confidence',
+            value: data.lowConfidenceCount,
+            icon: <Warning fontSize="small" />,
+            change: '-12.3%',
+            color: '#F857A6',
+            changeText: 'improvement',
+            isDown: true
+          }
+        ].map((card, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Paper 
+              elevation={isDark ? 2 : 1} 
+              sx={{ 
+                borderRadius: 2, 
+                overflow: 'hidden', 
+                height: '100%',
+                opacity: animateIn ? 1 : 0,
+                transform: animateIn ? 'translateY(0)' : 'translateY(30px)',
+                transition: `opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s ease`,
+                transitionDelay: `${index * 0.1}s`,
+                '&:hover': {
+                  boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.1)}`,
+                  transform: 'translateY(-5px)'
+                },
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 4,
+                  backgroundColor: card.color
+                }
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <Typography color="text.secondary" variant="subtitle2" fontWeight={500}>
+                    {card.title}
+                  </Typography>
+                  <Avatar sx={{ bgcolor: alpha(card.color, 0.2), color: card.color, width: 36, height: 36 }}>
+                    {card.icon}
+                  </Avatar>
+                </Box>
+                
+                <Typography variant="h3" component="div" fontWeight="bold" sx={{ mb: 1 }}>
+                  {card.value}
+                </Typography>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {card.isDown ? (
+                    <ArrowDownward sx={{ color: 'success.main', fontSize: 16, mr: 0.5 }} />
+                  ) : (
+                    <ArrowUpward sx={{ color: 'success.main', fontSize: 16, mr: 0.5 }} />
+                  )}
+                  <Typography variant="body2" color="success.main" fontWeight="medium">
+                    {card.change}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                    {card.changeText}
                   </Typography>
                 </Box>
-                <Box sx={{ 
-                  flex: 1, 
-                  display: 'flex', 
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: 'center', 
-                  px: 2, 
-                  py: 2 
-                }}>
-                  <Box sx={{ 
-                    width: { xs: '100%', sm: '50%' }, 
-                    height: { xs: '45%', sm: 'auto' }, 
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <Doughnut
-                      data={doughnutData}
-                      options={{
-                        ...chartOptions,
-                        plugins: {
-                          ...chartOptions.plugins,
-                          legend: { display: false }
+              </CardContent>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Chart tabs */}
+      <Paper 
+        elevation={isDark ? 2 : 1} 
+        sx={{ 
+          mb: 3, 
+          borderRadius: 2, 
+          overflow: 'hidden',
+          opacity: animateIn ? 1 : 0,
+          transform: animateIn ? 'translateY(0)' : 'translateY(30px)',
+          transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+          transitionDelay: '0.2s',
+        }}
+      >
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange} 
+            aria-label="chart tabs"
+            variant="fullWidth"
+          >
+            <Tab icon={<BarChart />} label="Query Volume" />
+            <Tab icon={<Timeline />} label="Confidence Trend" />
+            <Tab icon={<PieChartIcon />} label="Distribution" />
+          </Tabs>
+        </Box>
+        
+        <Box sx={{ p: 3, minHeight: 300 }}>
+          {tabValue === 0 && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Query Volume ({timeRange === 'year' ? 'Yearly' : 'Weekly'})
+              </Typography>
+              <AnimatedBarChart 
+                data={data.queryData} 
+                labels={data.barLabels}
+                barColor={theme.palette.primary.main}
+              />
+            </>
+          )}
+          
+          {tabValue === 1 && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Confidence Score Trend ({timeRange === 'year' ? 'Yearly' : 'Weekly'})
+              </Typography>
+              <AnimatedBarChart 
+                data={data.confidenceData} 
+                labels={data.barLabels}
+                barColor="#50C9C3"
+              />
+            </>
+          )}
+          
+          {tabValue === 2 && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Confidence Distribution
+              </Typography>
+              <AnimatedPieChart 
+                data={data.confidenceDistribution}
+                labels={['High (>80%)', 'Medium (60-80%)', 'Low (<60%)']}
+                colors={['#66bb6a', '#ffb74d', '#ef5350']}
+              />
+            </>
+          )}
+        </Box>
+      </Paper>
+
+      {/* Recent Interactions Table */}
+      <Paper 
+        elevation={isDark ? 2 : 1} 
+        sx={{ 
+          mb: 3, 
+          borderRadius: 2, 
+          overflow: 'hidden',
+          opacity: animateIn ? 1 : 0,
+          transform: animateIn ? 'translateY(0)' : 'translateY(30px)',
+          transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+          transitionDelay: '0.3s',
+        }}
+      >
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+          <Typography variant="h6" fontWeight="bold">
+            Recent Interactions
+          </Typography>
+          
+          <MUITooltip title="View all interactions">
+            <IconButton size="small">
+              <Info fontSize="small" />
+            </IconButton>
+          </MUITooltip>
+        </Box>
+        
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>User Query</TableCell>
+                <TableCell>Time</TableCell>
+                <TableCell>Confidence</TableCell>
+                <TableCell>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.recentInteractions.map((row, index) => (
+                <TableRow 
+                  key={row.id}
+                  sx={{ 
+                    opacity: animateIn ? 1 : 0,
+                    transform: animateIn ? 'translateY(0)' : 'translateY(10px)',
+                    transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+                    transitionDelay: `${0.4 + index * 0.1}s`,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.05)
+                    }
+                  }}
+                >
+                  <TableCell>{row.query}</TableCell>
+                  <TableCell>{row.time}</TableCell>
+                  <TableCell>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={row.confidence} 
+                      sx={{
+                        height: 10,
+                        borderRadius: 5,
+                        width: 80,
+                        mb: 0.5,
+                        bgcolor: alpha(theme.palette.grey[500], 0.1),
+                        '& .MuiLinearProgress-bar': {
+                          bgcolor: row.confidence >= 80 
+                            ? theme.palette.success.main 
+                            : row.confidence >= 60 
+                              ? theme.palette.warning.main 
+                              : theme.palette.error.main
                         }
                       }}
                     />
-                  </Box>
-                  <Box sx={{ 
-                    flex: 1, 
-                    width: { xs: '100%', sm: '50%' },
-                    ml: { xs: 0, sm: 2 }, 
-                    mt: { xs: 2, sm: 0 },
-                    overflowY: 'auto', 
-                    maxHeight: { xs: '55%', sm: 300 } 
-                  }}>
-                    <List dense>
-                      {Object.entries(mockData.categories).map(([cat, count], idx) => (
-                        <ListItem key={cat} sx={{ py: 0.5 }}>
-                          <Box
-                            sx={{
-                              width: 14,
-                              height: 14,
-                              borderRadius: '50%',
-                              bgcolor: doughnutData.datasets[0].backgroundColor[idx],
-                              mr: 1.5,
-                              border: mode === 'high-contrast' ? '2px solid var(--border-color)' : '1.5px solid #fff',
-                              boxShadow: mode === 'high-contrast' ? 0 : 1
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ flex: 1, color: 'var(--text-color)', fontWeight: 500 }}>
-                            {cat}
-                          </Typography>
-                          <Box
-                            sx={{
-                              bgcolor: mode === 'high-contrast'
-                                ? 'transparent'
-                                : doughnutData.datasets[0].backgroundColor[idx],
-                              color: mode === 'high-contrast'
-                                ? doughnutData.datasets[0].backgroundColor[idx]
-                                : mode === 'dark' ? '#222' : '#222',
-                              px: 1.5,
-                              borderRadius: 1,
-                              fontWeight: 600,
-                              fontSize: 13,
-                              minWidth: 32,
-                              textAlign: 'center',
-                              border: mode === 'high-contrast'
-                                ? `1px solid ${doughnutData.datasets[0].backgroundColor[idx]}`
-                                : 'none'
-                            }}
-                          >
-                            {count}
-                          </Box>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                </Box>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Paper
-                elevation={4}
-                sx={{
-                  p: 0,
-                  height: { xs: 350, md: 380 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  bgcolor: 'var(--surface-color)',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  border: mode === 'high-contrast' ? '1px solid var(--border-color)' : 'none',
-                  boxShadow: mode === 'dark' ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.1)'
-                }}
-              >
-                <Box
-                  sx={{
-                    bgcolor: mode === 'dark' ? 'success.dark' : 'success.light',
-                    px: 3,
-                    py: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderBottom: `1px solid var(--border-color)`
-                  }}
-                >
-                  <Box
-                    sx={{
-                      bgcolor: 'success.main',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: 40,
-                      height: 40,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mr: 2,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                    }}
-                  >
-                    <span role="img" aria-label="improvement" style={{ fontSize: '1.3rem' }}>
-                      🚀
-                    </span>
-                  </Box>
-                  <Typography 
-                    variant="h6" 
-                    fontWeight="bold" 
-                    color="var(--text-color)"
-                    sx={{
-                      textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      fontSize: '1.1rem'
-                    }}
-                  >
-                    Recent Improvements
-                  </Typography>
-                </Box>
-                <Box sx={{ flex: 1, p: 2, overflowY: 'auto' }}>
-                  <List sx={{ p: 0 }}>
-                    <ListItem
-                      sx={{
-                        mb: 2,
-                        p: 2,
-                        borderLeft: `4px solid ${theme.palette.success.main}`,
-                        bgcolor: mode === 'dark'
-                          ? alpha(theme.palette.success.main, 0.1)
-                          : alpha(theme.palette.success.light, 0.5),
-                        borderRadius: 1,
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateX(3px)',
-                          boxShadow: 2
-                        }
-                      }}
-                    >
-                      <ListItemText
-                        primary={
-                          <Typography 
-                            fontWeight="bold" 
-                            color="var(--text-color)"
-                            sx={{ fontSize: '1rem' }}
-                          >
-                            Course Registration Process
-                          </Typography>
-                        }
-                        secondary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                            <Box component="span" 
-                              sx={{ 
-                                bgcolor: alpha(theme.palette.success.main, 0.2),
-                                color: theme.palette.success.main,
-                                px: 1,
-                                py: 0.2,
-                                borderRadius: 1,
-                                fontSize: '0.8rem',
-                                fontWeight: 'bold',
-                                mr: 1
-                              }}
-                            >
-                              +44%
-                            </Box>
-                            <Typography 
-                              color={mode === 'high-contrast' ? 'secondary.main' : 'text.secondary'}
-                              variant="body2"
-                            >
-                              Confidence improved from 48% to 92%
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                    </ListItem>
-                    <ListItem
-                      sx={{
-                        mb: 2,
-                        p: 2,
-                        borderLeft: `4px solid ${theme.palette.success.main}`,
-                        bgcolor: mode === 'dark'
-                          ? alpha(theme.palette.success.main, 0.1)
-                          : alpha(theme.palette.success.light, 0.5),
-                        borderRadius: 1,
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateX(3px)',
-                          boxShadow: 2
-                        }
-                      }}
-                    >
-                      <ListItemText
-                        primary={
-                          <Typography 
-                            fontWeight="bold" 
-                            color="var(--text-color)"
-                            sx={{ fontSize: '1rem' }}
-                          >
-                            Financial Aid Requirements
-                          </Typography>
-                        }
-                        secondary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                            <Box component="span" 
-                              sx={{ 
-                                bgcolor: alpha(theme.palette.success.main, 0.2),
-                                color: theme.palette.success.main,
-                                px: 1,
-                                py: 0.2,
-                                borderRadius: 1,
-                                fontSize: '0.8rem',
-                                fontWeight: 'bold',
-                                mr: 1
-                              }}
-                            >
-                              +35%
-                            </Box>
-                            <Typography 
-                              color={mode === 'high-contrast' ? 'secondary.main' : 'text.secondary'}
-                              variant="body2"
-                            >
-                              Confidence improved from 53% to 88%
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                    </ListItem>
-                    <ListItem
-                      sx={{
-                        p: 2,
-                        borderLeft: `4px solid ${theme.palette.warning.main}`,
-                        bgcolor: mode === 'dark'
-                          ? alpha(theme.palette.warning.main, 0.1)
-                          : alpha(theme.palette.warning.light, 0.5),
-                        borderRadius: 1,
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateX(3px)',
-                          boxShadow: 2
-                        }
-                      }}
-                    >
-                      <ListItemText
-                        primary={
-                          <Typography 
-                            fontWeight="bold" 
-                            color="var(--text-color)"
-                            sx={{ fontSize: '1rem' }}
-                          >
-                            Campus Housing Options
-                          </Typography>
-                        }
-                        secondary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                            <Box component="span" 
-                              sx={{ 
-                                bgcolor: alpha(theme.palette.warning.main, 0.2),
-                                color: theme.palette.warning.main,
-                                px: 1,
-                                py: 0.2,
-                                borderRadius: 1,
-                                fontSize: '0.8rem',
-                                fontWeight: 'bold',
-                                mr: 1
-                              }}
-                            >
-                              In Progress
-                            </Box>
-                            <Typography 
-                              color={mode === 'high-contrast' ? 'secondary.main' : 'text.secondary'}
-                              variant="body2"
-                            >
-                              Current confidence 67%
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                    </ListItem>
-                  </List>
-                </Box>
-              </Paper>
-            </Grid>
-          </Grid>
-        </Stack>
-      </Container>
-    </Box>
+                    <Typography variant="caption" fontWeight="bold">
+                      {row.confidence}%
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={row.status}
+                      size="small"
+                      color={row.status === "Low Confidence" ? "error" : "default"}
+                      variant={row.status === "Low Confidence" ? "filled" : "outlined"}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+
+      <style jsx global>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </Container>
   );
 };
 

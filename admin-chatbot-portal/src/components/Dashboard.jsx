@@ -1,25 +1,51 @@
-import { useState, useEffect } from 'react';
-import { Box, Typography, AppBar, Toolbar, IconButton, useMediaQuery, useTheme, Grid, Paper, Divider } from '@mui/material';
-import { FaBars } from 'react-icons/fa';
-import { Line, Bar } from 'react-chartjs-2';
+import { useState, useEffect, useRef } from 'react';
+import { 
+  Box, Typography, useMediaQuery, useTheme, Grid, Paper, Divider, 
+  Card, CardContent, CardHeader, IconButton, Button, Avatar, 
+  LinearProgress, Stack, Tooltip, CircularProgress, alpha
+} from '@mui/material';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
-  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement
+  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, 
+  Tooltip as ChartTooltip, Legend, PointElement, LineElement, ArcElement
 } from 'chart.js';
+import { 
+  TrendingUp as TrendingUpIcon,
+  QuestionAnswer as QuestionAnswerIcon,
+  ReportGmailerrorred as ReportIcon,
+  CheckCircle as CheckCircleIcon,
+  Speed as SpeedIcon,
+  SmartToy as SmartToyIcon,
+  WarningAmber as WarningIcon,
+  AddCircle as AddCircleIcon,
+  Tune as TuneIcon,
+  Chat as ChatIcon
+} from '@mui/icons-material';
+import { FaBars } from 'react-icons/fa';
 import Chatbot from './Chatbot';
 import LowConfidence from './LowConfidence';
 import Analytics from './Analytics';
 import Sidebar from './Sidebar';
 import AccessibilityPanel from './AccessibilityPanel';
+import DocumentManager from './DocumentManager';
+import ChatbotBuilder from './ChatbotBuilder'; // Import the new component
+import Header from './Header';
+import { gsap } from 'gsap';
+import { useThemeMode } from './Accessibility';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement);
+ChartJS.register(
+  CategoryScale, LinearScale, BarElement, Title, ChartTooltip, 
+  Legend, PointElement, LineElement, ArcElement
+);
 
 const MOBILE_BREAKPOINT = 768;
 
-const DASHBOARD_SIDEBAR_WIDTH_EXPANDED = 40;
-const DASHBOARD_SIDEBAR_WIDTH_COLLAPSED = 40;
+const EXPANDED_WIDTH = 240;
+const COLLAPSED_WIDTH = 72;
 const DASHBOARD_MAIN_GAP = 24; 
 
 const Dashboard = () => {
+  const { mode } = useThemeMode();
   const [lowConfidenceQueries, setLowConfidenceQueries] = useState([]);
   const [activeTab, setActiveTab] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +65,30 @@ const Dashboard = () => {
     lastTraining: "2024-06-01",
     uptime: "99.98%",
   });
+
+  // Refs for animations
+  const welcomeRef = useRef(null);
+  const metricsRefs = useRef([]);
+  const graphRef = useRef(null);
+  const actionsRef = useRef(null);
+  const feedbackRef = useRef(null);
+
+  // Additional mock data for dashboard
+  const [dailyStats] = useState({
+    confidenceAvg: 82,
+    totalQueries: 247,
+    lowConfidenceCount: 18,
+    resolvedQueries: 192,
+    apiResponseTime: 0.8, // seconds
+  });
+
+  const [commonQueries] = useState([
+    "How do I reset my student password?",
+    "When is the registration deadline?",
+    "Where can I find my class schedule?",
+    "How do I apply for financial aid?",
+    "What are the library opening hours?"
+  ]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -60,53 +110,79 @@ const Dashboard = () => {
     }, 1000);
   };
 
-  const confidenceTrend = [80, 78, 82, 75, 85, 90, 88];
-  const avgConfidence = Math.round(confidenceTrend.reduce((a, b) => a + b, 0) / confidenceTrend.length);
-  const unresolvedLowConfidence = lowConfidenceQueries.length;
-
-  const theme = useTheme();
-  const isMobileView = useMediaQuery(theme.breakpoints.down('md'));
-
-  const sidebarWidth = isMobile
-    ? 0
-    : isSidebarExpanded
-      ? DASHBOARD_SIDEBAR_WIDTH_EXPANDED
-      : DASHBOARD_SIDEBAR_WIDTH_COLLAPSED;
-
-  const mainMarginLeft = isMobile ? 0 : `${sidebarWidth + DASHBOARD_MAIN_GAP}px`;
-
-  const mockPerformance = {
-    responseTimes: [1.2, 1.0, 0.9, 1.1, 0.8, 1.3, 1.0],
-    confidenceTrend: [80, 78, 82, 75, 85, 90, 88],
-    days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    totalQueries: 350,
-    avgConfidence: 85,
-  };
-
-  const lineData = {
-    labels: mockPerformance.days,
-    datasets: [
-      {
-        label: 'Avg. Confidence (%)',
-        data: mockPerformance.confidenceTrend,
-        borderColor: '#1976d2',
-        backgroundColor: 'rgba(25, 118, 210, 0.1)',
-        tension: 0.3,
-        fill: true,
-        pointRadius: 4,
+  // Animation for dashboard elements
+  useEffect(() => {
+    if (activeTab === '') { // Only run animations on dashboard view
+      const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+      
+      // Welcome banner animation
+      if (welcomeRef.current) {
+        timeline.fromTo(
+          welcomeRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8 }
+        );
       }
-    ]
-  };
+      
+      // Metrics cards animation
+      if (metricsRefs.current.length) {
+        timeline.fromTo(
+          metricsRefs.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, stagger: 0.1 },
+          "-=0.4" // Overlap with previous animation
+        );
+      }
+      
+      // Graph animation
+      if (graphRef.current) {
+        timeline.fromTo(
+          graphRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7 },
+          "-=0.2"
+        );
+      }
+      
+      // Actions animation
+      if (actionsRef.current) {
+        timeline.fromTo(
+          actionsRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7 },
+          "-=0.4"
+        );
+      }
+      
+      // Feedback animation
+      if (feedbackRef.current) {
+        timeline.fromTo(
+          feedbackRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7 },
+          "-=0.4"
+        );
+      }
+    }
+  }, [activeTab]);
 
-  const barData = {
-    labels: mockPerformance.days,
+  // Line chart data
+  const confidenceData = {
+    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
     datasets: [
       {
-        label: 'Avg. Response Time (s)',
-        data: mockPerformance.responseTimes,
-        backgroundColor: '#43a047',
-        borderRadius: 6,
-        barThickness: 24,
+        label: 'Confidence Score (%)',
+        data: [80, 78, 82, 75, 85, 90, 88],
+        fill: true,
+        backgroundColor: 'rgba(124, 58, 237, 0.2)',
+        borderColor: '#7C3AED',
+        tension: 0.4,
+        pointBackgroundColor: '#7C3AED',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: '#7C3AED',
+        pointRadius: 4,
+        pointHoverRadius: 6,
       }
     ]
   };
@@ -115,13 +191,76 @@ const Dashboard = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: true, position: 'top' },
-      title: { display: false }
+      legend: { 
+        display: true, 
+        position: 'top',
+        labels: {
+          boxWidth: 12,
+          usePointStyle: true,
+          pointStyle: 'circle',
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(15, 23, 42, 0.8)',
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          size: 13,
+        },
+        padding: 12,
+        cornerRadius: 8,
+        displayColors: false,
+      },
     },
     scales: {
-      y: { beginAtZero: true }
-    }
+      y: { 
+        beginAtZero: true,
+        grid: {
+          display: true,
+          color: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false,
+        },
+        ticks: {
+          callback: (value) => value + '%',
+        }
+      },
+      x: {
+        grid: {
+          display: false,
+          drawBorder: false,
+        },
+      }
+    },
+    animation: {
+      duration: 2000,
+      easing: 'easeOutQuart',
+    },
   };
+
+  // Quick action handlers
+  const handleTestChatbot = () => setActiveTab('chatbot');
+  const handleViewLowConfidence = () => setActiveTab('low-confidence');
+  const handleAddTraining = () => setActiveTab('documents');
+  const handleAdjustThreshold = () => {
+    // For demo, just display a notification or alert
+    alert("Confidence threshold adjustment would appear here");
+  };
+
+  const theme = useTheme();
+  const isMobileView = useMediaQuery(theme.breakpoints.down('md'));
+
+  const isDarkMode = mode === 'dark';
+  const bgColor = isDarkMode ? '#1A1B23' : '#F5F7FA';
+  const textColor = isDarkMode ? '#EEE' : '#333';
+  const accentColor = '#7C3AED'; // Purple accent
+
+  const sidebarWidth = isMobile
+    ? 0
+    : isSidebarExpanded
+      ? EXPANDED_WIDTH
+      : COLLAPSED_WIDTH;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -135,211 +274,509 @@ const Dashboard = () => {
         setMobileOpen={setMobileSidebarOpen}
       />
 
-      {/* Mobile AppBar */}
-      {isMobile && (
-        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={() => setMobileSidebarOpen(true)}
-              sx={{ mr: 2 }}
-            >
-              <FaBars />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div">
-              Admin Portal
-            </Typography>
-          </Toolbar>
-        </AppBar>
-      )}
-
+      {/* Main Content Area */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: isMobile ? 2 : 2.5,
-          width: { sm: `calc(100% - ${sidebarWidth}px)` },
-          ml: mainMarginLeft,
-          mt: isMobile ? 8 : 0,
+          display: 'flex',
+          flexDirection: 'column',
+          width: isMobile ? '100%' : `calc(100% - ${sidebarWidth}px)`,
           transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
-          bgcolor: 'transparent', 
+          bgcolor: bgColor,
+          background: isDarkMode 
+            ? 'linear-gradient(to bottom, #1A1B23, #24252E)'
+            : 'linear-gradient(to bottom, #F5F7FA, #FFFFFF)',
+          overflowX: 'hidden',
         }}
       >
-        <Box sx={{ maxWidth: 1200, mx: 0 }}>
+        {/* Header Component */}
+        <Header 
+          activeTab={activeTab} 
+          isMobile={isMobile} 
+          setMobileSidebarOpen={setMobileSidebarOpen} 
+        />
+        
+        {/* Main Content with proper padding */}
+        <Box 
+          sx={{ 
+            p: 3, 
+            maxWidth: 1400, 
+            width: '100%',
+            mx: 'auto',
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           {activeTab === '' && (
-            <section>
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                align="center"
+            <Box>
+              {/* Section 1: Welcome Banner */}
+              <Paper
+                ref={welcomeRef}
+                elevation={3}
                 sx={{
-                  fontWeight: 800,
-                  letterSpacing: '0.5px',
-                  mb: 3,
-                  fontSize: { xs: '2rem', md: '2.5rem' },
-                  background: 'linear-gradient(90deg, #1976d2 0%, #9c27b0 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
+                  mb: 4,
+                  p: { xs: 3, md: 4 },
+                  background: `linear-gradient(135deg, ${accentColor} 0%, #5B21B6 100%)`,
+                  borderRadius: 3,
+                  color: 'white',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 10px 30px rgba(124, 58, 237, 0.2)',
+                  transition: 'transform 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                  },
                 }}
               >
-                Admin Dashboard
-              </Typography>
-              
-              {/* Metrics Cards */}
-              <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid item xs={12} sm={4}>
-                  <Paper elevation={2} sx={{ p: 3, textAlign: 'center', bgcolor: '#e0c3fc' }}>
-                    <Typography variant="caption" color="text.secondary">Total Queries</Typography>
-                    <Typography variant="h5" fontWeight="bold" sx={{ mt: 1 }}>{mockPerformance.totalQueries}</Typography>
+                <Box sx={{ zIndex: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                    Welcome back, Admin!
+                  </Typography>
+                  <Typography variant="h6" sx={{ mb: 2, opacity: 0.9, fontWeight: 400 }}>
+                    Monitor your assistant's performance and fine-tune with confidence.
+                  </Typography>
+                  <Box 
+                    sx={{
+                      display: 'inline-block',
+                      px: 2, 
+                      py: 0.5, 
+                      bgcolor: 'rgba(255,255,255,0.15)',
+                      borderRadius: 4,
+                      backdropFilter: 'blur(10px)',
+                    }}
+                  >
+                    <Typography variant="body2">
+                      Model: Gemini API • Confidence Threshold: 70%
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box 
+                  sx={{ 
+                    display: { xs: 'none', md: 'flex' },
+                    height: 140,
+                    width: 140,
+                    borderRadius: '50%',
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2,
+                  }}
+                >
+                  <SmartToyIcon sx={{ fontSize: 70, opacity: 0.9 }} />
+                </Box>
+                {/* Abstract background elements */}
+                <Box 
+                  sx={{
+                    position: 'absolute',
+                    top: '-20%',
+                    right: '-10%',
+                    width: '300px',
+                    height: '300px',
+                    borderRadius: '50%',
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    zIndex: 0,
+                  }}
+                />
+                <Box 
+                  sx={{
+                    position: 'absolute',
+                    bottom: '-30%',
+                    left: '5%',
+                    width: '200px',
+                    height: '200px',
+                    borderRadius: '50%',
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    zIndex: 0,
+                  }}
+                />
+              </Paper>
+
+              {/* Section 2: Key Metrics */}
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                {/* Confidence Average */}
+                <Grid item xs={12} sm={6} md={3}>
+                  <Paper
+                    ref={el => metricsRefs.current[0] = el}
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      height: '100%',
+                      borderRadius: 2,
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar sx={{ bgcolor: theme.palette.primary.light, mr: 1.5 }}>
+                        <TrendingUpIcon />
+                      </Avatar>
+                      <Typography variant="h6" fontWeight="medium">
+                        Confidence Avg
+                      </Typography>
+                    </Box>
+                    <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: theme.palette.primary.main }}>
+                      {dailyStats.confidenceAvg}%
+                    </Typography>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={dailyStats.confidenceAvg} 
+                      sx={{ 
+                        height: 8, 
+                        borderRadius: 4,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                        '.MuiLinearProgress-bar': {
+                          backgroundColor: theme.palette.primary.main,
+                          borderRadius: 4,
+                        }
+                      }} 
+                    />
                   </Paper>
                 </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Paper elevation={2} sx={{ p: 3, textAlign: 'center', bgcolor: '#b5ead7' }}>
-                    <Typography variant="caption" color="text.secondary">Avg. Confidence</Typography>
-                    <Typography variant="h5" fontWeight="bold" color="primary" sx={{ mt: 1 }}>{mockPerformance.avgConfidence}%</Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Paper elevation={2} sx={{ p: 3, textAlign: 'center', bgcolor: '#f9f7d9' }}>
-                    <Typography variant="caption" color="text.secondary">Unresolved Low Confidence</Typography>
-                    <Typography variant="h5" fontWeight="bold" color="error" sx={{ mt: 1 }}>
-                      {lowConfidenceQueries.length}
+                
+                {/* Total Queries */}
+                <Grid item xs={12} sm={6} md={3}>
+                  <Paper
+                    ref={el => metricsRefs.current[1] = el}
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      height: '100%',
+                      borderRadius: 2,
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar sx={{ bgcolor: theme.palette.secondary.light, mr: 1.5 }}>
+                        <QuestionAnswerIcon />
+                      </Avatar>
+                      <Typography variant="h6" fontWeight="medium">
+                        Total Queries
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: theme.palette.secondary.main }}>
+                        {dailyStats.totalQueries}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Today
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      +12.5% from yesterday
                     </Typography>
                   </Paper>
                 </Grid>
-              </Grid>
-              <Divider sx={{ mb: 3 }} />
-              {/* Analytics Charts */}
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                
+                {/* Low Confidence Queries */}
+                <Grid item xs={12} sm={6} md={3}>
                   <Paper
-                    elevation={4}
+                    ref={el => metricsRefs.current[2] = el}
+                    elevation={2}
                     sx={{
-                      p: 0,
-                      height: 320,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      bgcolor: '#e0f7fa', 
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      position: 'relative',
-                      boxShadow: '0 8px 32px 0 rgba(25,118,210,0.15)'
+                      p: 2,
+                      height: '100%',
+                      borderRadius: 2,
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                      }
                     }}
                   >
-                    {/* Header */}
-                    <Box
-                      sx={{
-                        bgcolor: 'primary.light',
-                        px: 3,
-                        py: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                        boxShadow: 1
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          borderRadius: '50%',
-                          width: 36,
-                          height: 36,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2,
-                          fontSize: 22,
-                          boxShadow: 2
-                        }}
-                      >
-                        <span role="img" aria-label="trend">📈</span>
-                      </Box>
-                      <Typography
-                        variant="h6"
-                        fontWeight="medium"
-                        sx={{
-                          color: '#222', 
-                          letterSpacing: 1
-                        }}
-                      >
-                        Confidence Trend
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar sx={{ bgcolor: theme.palette.error.light, mr: 1.5 }}>
+                        <ReportIcon />
+                      </Avatar>
+                      <Typography variant="h6" fontWeight="medium">
+                        Low Confidence
                       </Typography>
                     </Box>
-                    <Box sx={{ flex: 1, px: 2, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Line data={lineData} options={chartOptions} />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: theme.palette.error.main }}>
+                        {dailyStats.lowConfidenceCount}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Unresolved
+                      </Typography>
                     </Box>
+                    <Typography variant="body2" color={theme.palette.error.main} sx={{ fontWeight: 500 }}>
+                      Needs attention
+                    </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={12} md={6}>
+                
+                {/* Resolved Queries */}
+                <Grid item xs={12} sm={6} md={3}>
                   <Paper
-                    elevation={4}
+                    ref={el => metricsRefs.current[3] = el}
+                    elevation={2}
                     sx={{
-                      p: 0,
-                      height: 320,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      bgcolor: '#fff1e6', 
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      position: 'relative',
-                      boxShadow: '0 8px 32px 0 rgba(251,192,45,0.15)'
+                      p: 2,
+                      height: '100%',
+                      borderRadius: 2,
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                      }
                     }}
                   >
-                    {/* Header */}
-                    <Box
-                      sx={{
-                        bgcolor: 'secondary.light',
-                        px: 3,
-                        py: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                        boxShadow: 1
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          bgcolor: 'secondary.main',
-                          color: 'white',
-                          borderRadius: '50%',
-                          width: 36,
-                          height: 36,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2,
-                          fontSize: 22,
-                          boxShadow: 2
-                        }}
-                      >
-                        <span role="img" aria-label="timer">⏱️</span>
-                      </Box>
-                      <Typography
-                        variant="h6"
-                        fontWeight="medium"
-                        sx={{
-                          color: '#222', 
-                          letterSpacing: 1
-                        }}
-                      >
-                        Avg. Response Time
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar sx={{ bgcolor: theme.palette.success.light, mr: 1.5 }}>
+                        <CheckCircleIcon />
+                      </Avatar>
+                      <Typography variant="h6" fontWeight="medium">
+                        Resolved Queries
                       </Typography>
                     </Box>
-                    <Box sx={{ flex: 1, px: 2, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Bar data={barData} options={chartOptions} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                        <CircularProgress
+                          variant="determinate"
+                          value={(dailyStats.resolvedQueries / dailyStats.totalQueries) * 100}
+                          size={60}
+                          thickness={6}
+                          sx={{ color: theme.palette.success.main }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            right: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Typography variant="body2" component="div" color="text.secondary">
+                            {Math.round((dailyStats.resolvedQueries / dailyStats.totalQueries) * 100)}%
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Typography variant="h4" fontWeight="bold" sx={{ color: theme.palette.success.main }}>
+                        {dailyStats.resolvedQueries}
+                      </Typography>
                     </Box>
                   </Paper>
                 </Grid>
               </Grid>
-            </section>
+
+              {/* Section 3 & 4: Line Graph and AI Feedback */}
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                {/* Chart */}
+                <Grid item xs={12} md={8}>
+                  <Paper
+                    ref={graphRef}
+                    elevation={2}
+                    sx={{
+                      p: 3,
+                      height: '100%',
+                      minHeight: 400,
+                      borderRadius: 2,
+                      transition: 'transform 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 8px 15px rgba(0,0,0,0.1)',
+                      }
+                    }}
+                  >
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                      Confidence Trend (Last 7 Days)
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      View daily confidence scores to track AI performance
+                    </Typography>
+                    <Box sx={{ height: 300 }}>
+                      <Line data={confidenceData} options={chartOptions} />
+                    </Box>
+                  </Paper>
+                </Grid>
+                
+                {/* AI Feedback Summary */}
+                <Grid item xs={12} md={4}>
+                  <Paper
+                    ref={feedbackRef}
+                    elevation={2}
+                    sx={{
+                      p: 3,
+                      height: '100%',
+                      borderRadius: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'transform 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 8px 15px rgba(0,0,0,0.1)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar sx={{ bgcolor: theme.palette.info.light, mr: 2 }}>
+                        <ChatIcon />
+                      </Avatar>
+                      <Typography variant="h6" fontWeight="bold">
+                        Top Queries This Week
+                      </Typography>
+                    </Box>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+                      {commonQueries.map((query, index) => (
+                        <Box 
+                          key={index} 
+                          sx={{ 
+                            py: 1.5, 
+                            borderBottom: index < commonQueries.length - 1 ? '1px solid' : 'none', 
+                            borderColor: 'divider'
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Box component="span" sx={{ 
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minWidth: 24,
+                              height: 24,
+                              mr: 1,
+                              bgcolor: theme.palette.primary.main,
+                              color: 'white',
+                              borderRadius: '50%',
+                              fontSize: 14,
+                            }}>
+                              {index + 1}
+                            </Box>
+                            {query}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Paper>
+                </Grid>
+              </Grid>
+
+              {/* Section 5: Quick Actions */}
+              <Paper
+                ref={actionsRef}
+                elevation={2}
+                sx={{ p: 3, borderRadius: 2, mb: 4 }}
+              >
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  Quick Actions
+                </Typography>
+                
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<SmartToyIcon />}
+                      onClick={handleTestChatbot}
+                      fullWidth
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-3px)',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                        }
+                      }}
+                    >
+                      Test Chatbot
+                    </Button>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      startIcon={<WarningIcon />}
+                      onClick={handleViewLowConfidence}
+                      fullWidth
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-3px)',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                        }
+                      }}
+                    >
+                      View Low Confidence
+                    </Button>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<AddCircleIcon />}
+                      onClick={handleAddTraining}
+                      fullWidth
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-3px)',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                        }
+                      }}
+                    >
+                      Add Training Data
+                    </Button>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      startIcon={<TuneIcon />}
+                      onClick={handleAdjustThreshold}
+                      fullWidth
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-3px)',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                        }
+                      }}
+                    >
+                      Adjust Threshold
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Box>
           )}
           {activeTab === 'chatbot' && (
             <section>
@@ -358,6 +795,16 @@ const Dashboard = () => {
           {activeTab === 'analytics' && (
             <section>
               <Analytics queries={lowConfidenceQueries} />
+            </section>
+          )}
+          {activeTab === 'documents' && (
+            <section>
+              <DocumentManager />
+            </section>
+          )}
+          {activeTab === 'chatbot-builder' && (
+            <section>
+              <ChatbotBuilder />
             </section>
           )}
           {activeTab === 'accessibility' && (

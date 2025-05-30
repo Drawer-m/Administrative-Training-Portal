@@ -23,14 +23,14 @@ const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     background: {
-      default: '#121212',
-      paper: '#1e1e1e',
+      default: '#0F1017', // Darker background for better theme matching
+      paper: '#1A1B23', // Darker paper color
     },
     primary: {
-      main: '#90caf9',
+      main: '#7C3AED', // Purple accent
     },
     secondary: {
-      main: '#ce93d8',
+      main: '#4EADEA', // Blue accent
     },
   },
 });
@@ -60,37 +60,47 @@ const highContrastTheme = createTheme({
   },
 });
 
-const ThemeContext = createContext({
-  mode: 'light',
+// Single Context for the theme
+const AccessibilityContext = createContext({
+  mode: 'dark',
   setMode: () => {},
-  currentTheme: lightTheme,
+  fontSize: 'medium',
+  setFontSize: () => {},
+  isHighContrast: false,
+  setIsHighContrast: () => {},
+  currentTheme: darkTheme,
 });
 
-export const ThemeProvider = ({ children }) => {
-  const [mode, setMode] = useState(() => {
-    // Check local storage for saved theme preference
-    const savedMode = localStorage.getItem('themeMode');
-    return savedMode || 'light';
-  });
+// Create a single hook to access the context
+export const useThemeMode = () => useContext(AccessibilityContext);
 
+// Combined Provider that handles both Theme and Accessibility settings
+export const AccessibilityProvider = ({ children, defaultMode = 'dark' }) => {
+  const [mode, setMode] = useState(localStorage.getItem('theme-mode') || defaultMode);
+  const [fontSize, setFontSize] = useState(localStorage.getItem('font-size') || 'medium');
+  const [isHighContrast, setIsHighContrast] = useState(localStorage.getItem('high-contrast') === 'true');
+  
   // Select the appropriate theme based on mode
   const currentTheme = 
     mode === 'dark' ? darkTheme : 
     mode === 'high-contrast' ? highContrastTheme : 
     lightTheme;
-
-  // Apply theme changes and save to localStorage
+  
   useEffect(() => {
-    localStorage.setItem('themeMode', mode);
+    localStorage.setItem('theme-mode', mode);
+    document.documentElement.setAttribute('data-theme', mode);
     
-    // Clear any custom background colors
-    document.body.style.background = '';
-    
-    // Remove all theme classes first
-    document.body.classList.remove('theme-light', 'theme-dark', 'theme-high-contrast');
-    
-    // Add the appropriate theme class
-    document.body.classList.add(`theme-${mode}`);
+    // Apply class to body for additional styling
+    if (mode === 'dark') {
+      document.body.classList.add('theme-dark');
+      document.body.classList.remove('theme-light', 'theme-high-contrast');
+    } else if (mode === 'light') {
+      document.body.classList.add('theme-light');
+      document.body.classList.remove('theme-dark', 'theme-high-contrast');
+    } else if (mode === 'high-contrast') {
+      document.body.classList.add('theme-high-contrast');
+      document.body.classList.remove('theme-dark', 'theme-light');
+    }
     
     // Set specific colors for high contrast mode
     if (mode === 'high-contrast') {
@@ -98,19 +108,46 @@ export const ThemeProvider = ({ children }) => {
     } else {
       document.body.style.setProperty('--focus-color', '#2563eb');
     }
-    
-    // If there was a custom background set, remove it when changing themes
-    document.body.classList.remove('using-custom-bg');
   }, [mode]);
-
+  
+  useEffect(() => {
+    localStorage.setItem('font-size', fontSize);
+    
+    const fontSizeClass = `font-size-${fontSize}`;
+    document.body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
+    document.body.classList.add(fontSizeClass);
+  }, [fontSize]);
+  
+  useEffect(() => {
+    localStorage.setItem('high-contrast', isHighContrast);
+    
+    if (isHighContrast) {
+      document.body.classList.add('high-contrast');
+      setMode('high-contrast');
+    } else {
+      document.body.classList.remove('high-contrast');
+      if (mode === 'high-contrast') {
+        setMode('dark');
+      }
+    }
+  }, [isHighContrast]);
+  
   return (
-    <ThemeContext.Provider value={{ mode, setMode, currentTheme }}>
+    <AccessibilityContext.Provider 
+      value={{ 
+        mode, 
+        setMode, 
+        fontSize, 
+        setFontSize, 
+        isHighContrast, 
+        setIsHighContrast,
+        currentTheme
+      }}
+    >
       <MuiThemeProvider theme={currentTheme}>
         <CssBaseline />
         {children}
       </MuiThemeProvider>
-    </ThemeContext.Provider>
+    </AccessibilityContext.Provider>
   );
 };
-
-export const useThemeMode = () => useContext(ThemeContext);
