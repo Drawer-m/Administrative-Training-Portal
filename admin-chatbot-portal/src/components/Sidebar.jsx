@@ -13,13 +13,14 @@ import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   Menu as MenuIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  MonetizationOn as MonetizationOnIcon,
 } from '@mui/icons-material';
 import { useThemeMode } from './Accessibility';
 import { gsap } from 'gsap';
 import AdminLogo from '../assets/admin-logo.svg';
 
-// Define navigation items with MUI icons
+// Ensure this array contains the subscription item with exact key name
 const navItems = [
   { key: '', icon: <DashboardIcon />, label: 'Dashboard' },
   { key: 'chatbot', icon: <ChatbotIcon />, label: 'Chatbot Tester' },
@@ -27,6 +28,7 @@ const navItems = [
   { key: 'analytics', icon: <AnalyticsIcon />, label: 'Analytics' },
   { key: 'documents', icon: <DocumentIcon />, label: 'Document Manager' },
   { key: 'chatbot-builder', icon: <SettingsIcon />, label: 'Chatbot Builder' },
+  { key: 'subscription', icon: <MonetizationOnIcon />, label: 'Subscription' },
   { key: 'accessibility', icon: <AccessibilityIcon />, label: 'Accessibility' },
 ];
 

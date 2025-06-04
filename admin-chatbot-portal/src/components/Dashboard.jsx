@@ -19,7 +19,8 @@ import {
   WarningAmber as WarningIcon,
   AddCircle as AddCircleIcon,
   Tune as TuneIcon,
-  Chat as ChatIcon
+  Chat as ChatIcon,
+  MonetizationOn as MonetizationOnIcon
 } from '@mui/icons-material';
 import { FaBars } from 'react-icons/fa';
 import Chatbot from './Chatbot';
@@ -30,6 +31,7 @@ import AccessibilityPanel from './AccessibilityPanel';
 import DocumentManager from './DocumentManager';
 import ChatbotBuilder from './ChatbotBuilder'; // Import the new component
 import Header from './Header';
+import SubscriptionManagement from './SubscriptionManagement'; // Import Subscription component
 import { gsap } from 'gsap';
 import { useThemeMode } from './Accessibility';
 
@@ -72,6 +74,9 @@ const Dashboard = () => {
   const graphRef = useRef(null);
   const actionsRef = useRef(null);
   const feedbackRef = useRef(null);
+
+  // Ref for the spinning robot icon
+  const robotIconRef = useRef(null);
 
   // Additional mock data for dashboard
   const [dailyStats] = useState({
@@ -262,6 +267,38 @@ const Dashboard = () => {
       ? EXPANDED_WIDTH
       : COLLAPSED_WIDTH;
 
+  // Add useEffect for spinning the robot icon
+  useEffect(() => {
+    if (robotIconRef.current) {
+      gsap.to(robotIconRef.current, {
+        rotation: 360,
+        duration: 4,
+        repeat: -1,
+        ease: "linear",
+        transformOrigin: "50% 50%",
+      });
+    }
+    // Cleanup on unmount
+    return () => {
+      if (robotIconRef.current) {
+        gsap.killTweensOf(robotIconRef.current);
+        gsap.set(robotIconRef.current, { rotation: 0 });
+      }
+    };
+  }, []);
+
+  // Add to the pageTitles object (if you have such an object for the header)
+  const pageTitles = {
+    '': 'Dashboard',
+    'chatbot': 'Chatbot Tester',
+    'low-confidence': 'Low Confidence Monitor',
+    'analytics': 'Analytics Dashboard',
+    'documents': 'Document Manager',
+    'chatbot-builder': 'Chatbot Builder',
+    'subscription': 'Subscription Management', // Add this line
+    'accessibility': 'Accessibility Settings'
+  };
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar
@@ -370,7 +407,8 @@ const Dashboard = () => {
                     mr: 2,
                   }}
                 >
-                  <SmartToyIcon sx={{ fontSize: 70, opacity: 0.9 }} />
+                  {/* Attach the ref to the icon for spinning */}
+                  <SmartToyIcon ref={robotIconRef} sx={{ fontSize: 70, opacity: 0.9 }} />
                 </Box>
                 {/* Abstract background elements */}
                 <Box 
@@ -578,7 +616,7 @@ const Dashboard = () => {
                 </Grid>
               </Grid>
 
-              {/* Section 3 & 4: Line Graph and AI Feedback */}
+              {/* Section 3 & 4: Line Graph and AI Feedback + Quick Actions side by side */}
               <Grid container spacing={3} sx={{ mb: 4 }}>
                 {/* Chart */}
                 <Grid item xs={12} md={8}>
@@ -609,173 +647,170 @@ const Dashboard = () => {
                   </Paper>
                 </Grid>
                 
-                {/* AI Feedback Summary */}
+                {/* AI Feedback Summary + Quick Actions */}
                 <Grid item xs={12} md={4}>
-                  <Paper
-                    ref={feedbackRef}
-                    elevation={2}
-                    sx={{
-                      p: 3,
-                      height: '100%',
-                      borderRadius: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'transform 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-3px)',
-                        boxShadow: '0 8px 15px rgba(0,0,0,0.1)',
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ bgcolor: theme.palette.info.light, mr: 2 }}>
-                        <ChatIcon />
-                      </Avatar>
-                      <Typography variant="h6" fontWeight="bold">
-                        Top Queries This Week
+                  <Stack spacing={3}>
+                    <Paper
+                      ref={feedbackRef}
+                      elevation={2}
+                      sx={{
+                        p: 3,
+                        borderRadius: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-3px)',
+                          boxShadow: '0 8px 15px rgba(0,0,0,0.1)',
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Avatar sx={{ bgcolor: theme.palette.info.light, mr: 2 }}>
+                          <ChatIcon />
+                        </Avatar>
+                        <Typography variant="h6" fontWeight="bold">
+                          Top Queries This Week
+                        </Typography>
+                      </Box>
+                      
+                      <Divider sx={{ my: 2 }} />
+                      
+                      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+                        {commonQueries.map((query, index) => (
+                          <Box 
+                            key={index} 
+                            sx={{ 
+                              py: 1.5, 
+                              borderBottom: index < commonQueries.length - 1 ? '1px solid' : 'none', 
+                              borderColor: 'divider'
+                            }}
+                          >
+                            <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Box component="span" sx={{ 
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minWidth: 24,
+                                height: 24,
+                                mr: 1,
+                                bgcolor: theme.palette.primary.main,
+                                color: 'white',
+                                borderRadius: '50%',
+                                fontSize: 14,
+                              }}>
+                                {index + 1}
+                              </Box>
+                              {query}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Paper>
+                    {/* Quick Actions moved here */}
+                    <Paper
+                      ref={actionsRef}
+                      elevation={2}
+                      sx={{ p: 3, borderRadius: 2 }}
+                    >
+                      <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        Quick Actions
                       </Typography>
-                    </Box>
-                    
-                    <Divider sx={{ my: 2 }} />
-                    
-                    <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-                      {commonQueries.map((query, index) => (
-                        <Box 
-                          key={index} 
-                          sx={{ 
-                            py: 1.5, 
-                            borderBottom: index < commonQueries.length - 1 ? '1px solid' : 'none', 
-                            borderColor: 'divider'
-                          }}
-                        >
-                          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Box component="span" sx={{ 
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              minWidth: 24,
-                              height: 24,
-                              mr: 1,
-                              bgcolor: theme.palette.primary.main,
-                              color: 'white',
-                              borderRadius: '50%',
-                              fontSize: 14,
-                            }}>
-                              {index + 1}
-                            </Box>
-                            {query}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Paper>
+                      
+                      <Grid container spacing={2} sx={{ mt: 1 }}>
+                        <Grid item xs={12} sm={6}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<SmartToyIcon />}
+                            onClick={handleTestChatbot}
+                            fullWidth
+                            sx={{ 
+                              py: 1.5,
+                              textTransform: 'none',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              transition: 'transform 0.2s',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                              }
+                            }}
+                          >
+                            Test Chatbot
+                          </Button>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<WarningIcon />}
+                            onClick={handleViewLowConfidence}
+                            fullWidth
+                            sx={{ 
+                              py: 1.5,
+                              textTransform: 'none',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              transition: 'transform 0.2s',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                              }
+                            }}
+                          >
+                            View Low Confidence
+                          </Button>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Button
+                            variant="contained"
+                            color="success"
+                            startIcon={<AddCircleIcon />}
+                            onClick={handleAddTraining}
+                            fullWidth
+                            sx={{ 
+                              py: 1.5,
+                              textTransform: 'none',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              transition: 'transform 0.2s',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                              }
+                            }}
+                          >
+                            Add Training Data
+                          </Button>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            startIcon={<TuneIcon />}
+                            onClick={handleAdjustThreshold}
+                            fullWidth
+                            sx={{ 
+                              py: 1.5,
+                              textTransform: 'none',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              transition: 'transform 0.2s',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                              }
+                            }}
+                          >
+                            Adjust Threshold
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Stack>
                 </Grid>
               </Grid>
-
-              {/* Section 5: Quick Actions */}
-              <Paper
-                ref={actionsRef}
-                elevation={2}
-                sx={{ p: 3, borderRadius: 2, mb: 4 }}
-              >
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  Quick Actions
-                </Typography>
-                
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<SmartToyIcon />}
-                      onClick={handleTestChatbot}
-                      fullWidth
-                      sx={{ 
-                        py: 1.5,
-                        textTransform: 'none',
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-3px)',
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-                        }
-                      }}
-                    >
-                      Test Chatbot
-                    </Button>
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={<WarningIcon />}
-                      onClick={handleViewLowConfidence}
-                      fullWidth
-                      sx={{ 
-                        py: 1.5,
-                        textTransform: 'none',
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-3px)',
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-                        }
-                      }}
-                    >
-                      View Low Confidence
-                    </Button>
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      startIcon={<AddCircleIcon />}
-                      onClick={handleAddTraining}
-                      fullWidth
-                      sx={{ 
-                        py: 1.5,
-                        textTransform: 'none',
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-3px)',
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-                        }
-                      }}
-                    >
-                      Add Training Data
-                    </Button>
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      startIcon={<TuneIcon />}
-                      onClick={handleAdjustThreshold}
-                      fullWidth
-                      sx={{ 
-                        py: 1.5,
-                        textTransform: 'none',
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-3px)',
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-                        }
-                      }}
-                    >
-                      Adjust Threshold
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Paper>
             </Box>
           )}
           {activeTab === 'chatbot' && (
@@ -811,6 +846,12 @@ const Dashboard = () => {
             <section>
               <AccessibilityPanel />
             </section>
+          )}
+          {activeTab === 'subscription' && (
+            <>
+              {console.log('Rendering subscription tab')}
+              <SubscriptionManagement />
+            </>
           )}
         </Box>
       </Box>

@@ -27,7 +27,8 @@ import {
   AccountCircle, 
   FolderOpenRounded, 
   HomeRounded,
-  MenuRounded 
+  MenuRounded,
+  MonetizationOn as MonetizationOnIcon // Add this line
 } from '@mui/icons-material';
 import { useThemeMode } from './Accessibility';
 import { gsap } from 'gsap';
@@ -142,6 +143,8 @@ const Header = ({ activeTab, isMobile, setMobileSidebarOpen }) => {
     switch(activeTab) {
       case 'documents':
         return <FolderOpenRounded sx={{ mr: 1, color: '#e0e0e0' }} />;
+      case 'subscription':
+        return <MonetizationOnIcon sx={{ mr: 1, color: '#e0e0e0' }} />;
       default:
         return null;
     }

@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-// Create a dark theme base for the application
+// Create a dark theme base for the application none of it seems to be working 
 export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
