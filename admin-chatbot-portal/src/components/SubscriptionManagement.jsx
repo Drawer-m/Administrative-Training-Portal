@@ -10,10 +10,11 @@ import {
   Close as CloseIcon,
   Warning as WarningIcon,
   CalendarMonth as CalendarIcon,
+  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import { useThemeMode } from './Accessibility';
 
-// Mock data for the given 
+// Mock data for the given thingy idk 
 const planFeatures = {
   starter: [
     { text: "5,000 chatbot requests/month", included: true },
@@ -295,6 +296,13 @@ const SubscriptionManagement = () => {
   return (
     <Box sx={{ width: '100%', pb: 8 }}>
       <Container maxWidth="xl">
+        {/* Add breadcrumb navigation */}
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+            Dashboard &gt; Subscription
+          </Typography>
+        </Box>
+        
         {/* Page Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
@@ -525,42 +533,6 @@ const SubscriptionManagement = () => {
                 ))}
               </Grid>
             </Box>
-
-            {/* Usage Visualization - Placeholder */}
-            <Paper elevation={2} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <TrendingUpIcon sx={{ mr: 1 }} />
-                  Usage Statistics
-                </Box>
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Your request usage has been growing steadily over the past months.
-              </Typography>
-
-              {/* Simple usage graph placeholder */}
-              <Box sx={{
-                height: 200,
-                background: `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.primary.main, 0.3)})`,
-                borderRadius: 2,
-                display: 'flex',
-                alignItems: 'flex-end',
-                gap: 2,
-                p: 2
-              }}>
-                {[40, 55, 48, 60, 75, 90, 82].map((height, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      height: `${height}%`,
-                      flex: 1,
-                      bgcolor: theme.palette.primary.main,
-                      borderRadius: 1
-                    }}
-                  />
-                ))}
-              </Box>
-            </Paper>
           </Grid>
         </Grid>
       </Container>

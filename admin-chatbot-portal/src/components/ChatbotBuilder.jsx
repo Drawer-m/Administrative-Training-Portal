@@ -1004,6 +1004,13 @@ const ChatbotBuilder = () => {
       display: 'flex',
       flexDirection: 'column'
     }}>
+      {/* Add breadcrumb navigation */}
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+          Dashboard &gt; Chatbot Builder
+        </Typography>
+      </Box>
+      
       <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
         Chatbot Builder
       </Typography>
