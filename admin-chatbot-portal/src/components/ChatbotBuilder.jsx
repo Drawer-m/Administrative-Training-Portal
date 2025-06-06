@@ -74,6 +74,7 @@ const ChatbotBuilder = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
 
   // State for chatbot configuration
   const [chatbotConfig, setChatbotConfig] = useState({
@@ -1004,6 +1005,43 @@ const ChatbotBuilder = () => {
       display: 'flex',
       flexDirection: 'column'
     }}>
+      {/* Welcome banner for users coming from onboarding */}
+      {showWelcomeBanner && (
+        <Box
+          sx={{
+            mb: 3,
+            p: 3,
+            borderRadius: 2,
+            bgcolor: theme.palette.primary.light,
+            color: theme.palette.getContrastText(theme.palette.primary.light),
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <IconButton
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'inherit',
+              opacity: 0.7,
+              '&:hover': { opacity: 1 }
+            }}
+            onClick={() => setShowWelcomeBanner(false)}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+          
+          <Typography variant="h6" gutterBottom>
+            🎉 Welcome to the Chatbot Builder!
+          </Typography>
+          <Typography variant="body1">
+            This is where you can customize your chatbot. Start by changing colors and appearance, then configure your bot's behavior. When you're ready, generate the code to embed it on your website!
+          </Typography>
+        </Box>
+      )}
+      
       {/* Add breadcrumb navigation */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
         <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
@@ -2445,9 +2483,84 @@ const ChatbotBuilder = () => {
         return null;
     }
   }
-};
 
-export default ChatbotBuilder;
+  // Update this useEffect to load saved appearance, button, AND greeting settings from onboarding
+  useEffect(() => {
+    // Check if we have saved settings from onboarding
+    const savedAppearance = localStorage.getItem('chatbotAppearance');
+    const savedButtonSettings = localStorage.getItem('chatbotButton');
+    const savedGreetingSettings = localStorage.getItem('chatbotGreetings');
+    
+    // Apply appearance settings if they exist
+    if (savedAppearance) {
+      try {
+        const parsedSettings = JSON.parse(savedAppearance);
+        
+        // Apply saved appearance settings to chatbot configuration
+        setChatbotConfig(prev => ({
+          ...prev,
+          appearance: {
+            ...prev.appearance,
+            primaryColor: parsedSettings.primaryColor || prev.appearance.primaryColor,
+            font: parsedSettings.font || prev.appearance.font,
+            borderRadius: parsedSettings.borderRadius || prev.appearance.borderRadius,
+          }
+        }));
+      } catch (error) {
+        console.error("Error parsing saved appearance settings:", error);
+      }
+    }
+    
+    // Apply button settings if they exist
+    if (savedButtonSettings) {
+      try {
+        const parsedButtonSettings = JSON.parse(savedButtonSettings);
+        
+        // Apply saved button settings to chatbot configuration
+        setChatbotConfig(prev => ({
+          ...prev,
+          chatButton: {
+            ...prev.chatButton,
+            position: parsedButtonSettings.position || prev.chatButton.position,
+            icon: parsedButtonSettings.icon || prev.chatButton.icon,
+            animation: parsedButtonSettings.hoverEffect || prev.chatButton.animation,
+          },
+          appearance: {
+            ...prev.appearance,
+            bubbleIcon: parsedButtonSettings.icon || prev.appearance.bubbleIcon,
+            // Apply square shape if selected
+            borderRadius: parsedButtonSettings.shape === 'square' ? 4 : prev.appearance.borderRadius,
+          }
+        }));
+      } catch (error) {
+        console.error("Error parsing saved button settings:", error);
+      }
+    }
+    
+    // Apply greeting settings if they exist
+    if (savedGreetingSettings) {
+      try {
+        const parsedGreetingSettings = JSON.parse(savedGreetingSettings);
+        
+        // Apply saved greeting settings to chatbot configuration
+        setChatbotConfig(prev => ({
+          ...prev,
+          greetings: {
+            ...prev.greetings,
+            welcomeMessage: parsedGreetingSettings.welcomeMessage || prev.greetings.welcomeMessage,
+            faqOptions: parsedGreetingSettings.questions || prev.greetings.faqOptions,
+          }
+        }));
+        
+        // Show a success notification if any setting was loaded
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error("Error parsing saved greeting settings:", error);
+      }
+    }
+  }, []);
+
+};
 
 // Helper function to convert hex color to RGB values
 const hexToRgb = (hex) => {
@@ -2484,3 +2597,5 @@ const ensureTextContrast = (bgColor) => {
   // Return white for dark backgrounds, black for light backgrounds
   return luminance > 0.5 ? '#000000' : '#FFFFFF';
 };
+
+export default ChatbotBuilder;

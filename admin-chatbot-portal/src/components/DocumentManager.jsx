@@ -59,7 +59,7 @@ const mockFileSystem = {
   file1: {
     id: 'file1',
     name: 'Getting Started Guide.pdf',
-    type: 'file',
+    type: 'file', 
     fileType: 'pdf',
     size: '2.5 MB',
     modified: '2023-11-15',

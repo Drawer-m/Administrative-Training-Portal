@@ -32,6 +32,7 @@ import DocumentManager from './DocumentManager';
 import ChatbotBuilder from './ChatbotBuilder'; // Import the new component
 import Header from './Header';
 import SubscriptionManagement from './SubscriptionManagement'; // Import Subscription component
+import OnboardingBot from './OnboardingBot';
 import { gsap } from 'gsap';
 import { useThemeMode } from './Accessibility';
 
@@ -54,6 +55,8 @@ const Dashboard = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showOnboardingBot, setShowOnboardingBot] = useState(true); // Default to showing
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
 
   const [recentQueries] = useState([
     { question: "How do I reset my password?", response: "You can reset your password via the portal.", confidence: 92, time: "2 min ago" },
@@ -297,6 +300,36 @@ const Dashboard = () => {
     'chatbot-builder': 'Chatbot Builder',
     'subscription': 'Subscription Management', // Add this line
     'accessibility': 'Accessibility Settings'
+  };
+
+  useEffect(() => {
+    // Check if user has completed onboarding
+    const onboardingComplete = localStorage.getItem('onboardingComplete') === 'true';
+    console.log('Dashboard checking onboarding status:', onboardingComplete ? 'Completed' : 'Not completed');
+    
+    // Show onboarding bot if onboarding is not complete
+    setShowOnboardingBot(!onboardingComplete);
+    
+    // If we're in development, add a helper method
+    if (process.env.NODE_ENV === 'development') {
+      window.toggleOnboarding = () => {
+        setShowOnboardingBot(prev => !prev);
+        console.log('Onboarding visibility toggled');
+      };
+    }
+  }, []);
+  
+  // This is called when onboarding is finished
+  const handleStartOnboarding = () => {
+    // Navigate to the dashboard main view
+    console.log('Onboarding completed, hiding onboarding UI');
+    setShowOnboardingBot(false);
+    
+    // You might want to refresh user data or state here
+    // ...
+    
+    // Show a welcome message or trigger other post-onboarding actions
+    // ...
   };
 
   return (
@@ -855,6 +888,39 @@ const Dashboard = () => {
           )}
         </Box>
       </Box>
+      
+      {/* Welcome Banner */}
+      {showWelcomeBanner && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'calc(100% - 80px)',
+            maxWidth: 800,
+            zIndex: 1000,
+            p: 2,
+            borderRadius: 2,
+            bgcolor: 'success.main',
+            color: 'white',
+            boxShadow: 4,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Typography variant="subtitle1" fontWeight="medium">
+            🎉 Your chatbot is live! Welcome to the Admin Dashboard.
+          </Typography>
+          <IconButton size="small" color="inherit" onClick={() => setShowWelcomeBanner(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      )}
+      
+      {/* Onboarding Bot */}
+      {showOnboardingBot && <OnboardingBot onStartOnboarding={handleStartOnboarding} />}
     </Box>
   );
 };

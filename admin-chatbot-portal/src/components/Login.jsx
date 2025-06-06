@@ -1,43 +1,30 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaLock } from 'react-icons/fa';
+import { FaSignInAlt } from 'react-icons/fa';
 import {
   Box,
   Paper,
   Typography,
-  TextField,
   Button,
-  InputAdornment,
   CircularProgress,
-  Alert,
   Stack
 } from '@mui/material';
 
 function Login({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     setIsLoading(true);
-    setError('');
-    console.log('Attempting login with:', username, password); // Debug log
-
+    
+    // Simulate a brief loading state for visual feedback
     setTimeout(() => {
-      if (username === 'admin' && password === 'admin123') {
-        localStorage.setItem('isLoggedIn', 'true');
-        setIsLoading(false);
-        if (onLogin) onLogin(); // Notify App to update login state
-        navigate('/dashboard', { replace: true });
-      } else {
-        setError('Invalid username or password. Try admin/admin123.');
-        setIsLoading(false);
-        console.log('Login failed'); // Debug log
-      }
-    }, 1000);
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('onboardingComplete', 'false');
+      setIsLoading(false);
+      if (onLogin) onLogin(); // Notify App to update login state
+      navigate('/dashboard', { replace: true });
+    }, 800);
   };
 
   return (
@@ -61,75 +48,45 @@ function Login({ onLogin }) {
           boxShadow: 10,
           bgcolor: '#f8ede3', 
           border: '1px solid #e0c3fc',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
         <Typography variant="h4" fontWeight="bold" align="center" gutterBottom>
           Welcome to AdminBot
         </Typography>
-        <Typography variant="subtitle1" align="center" color="text.secondary" sx={{ mb: 3 }}>
-          Sign in to access the <span style={{ color: '#7b2ff2', fontWeight: 700 }}>Admin Portal</span>
+        <Typography variant="subtitle1" align="center" color="text.secondary" sx={{ mb: 4 }}>
+          Access the <span style={{ color: '#7b2ff2', fontWeight: 700 }}>Admin Portal</span> with a single click
         </Typography>
-        <form onSubmit={handleLogin}>
-          <Stack spacing={2}>
-            <TextField
-              label="Username"
-              variant="outlined"
-              fullWidth
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <FaUser />
-                  </InputAdornment>
-                ),
-              }}
-              autoFocus
-            />
-            <TextField
-              label="Password"
-              variant="outlined"
-              type="password"
-              fullWidth
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <FaLock />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            {error && (
-              <Alert severity="error" variant="filled">
-                {error}
-              </Alert>
-            )}
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              disabled={isLoading}
-              sx={{
-                fontWeight: 'bold',
-                py: 1.5,
-                bgcolor: 'primary.main',
-                '&:hover': { bgcolor: 'primary.dark' }
-              }}
-              startIcon={isLoading && <CircularProgress size={20} color="inherit" />}
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </Button>
-            <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
-              Demo credentials: <span style={{ fontWeight: 700 }}>admin / admin123</span>
-            </Typography>
-          </Stack>
-        </form>
+        
+        <Stack spacing={3} alignItems="center" width="100%">
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            onClick={handleLogin}
+            disabled={isLoading}
+            sx={{
+              fontWeight: 'bold',
+              py: 2,
+              fontSize: '1.1rem',
+              bgcolor: 'primary.main',
+              '&:hover': { bgcolor: 'primary.dark', transform: 'translateY(-2px)' },
+              transition: 'all 0.3s ease',
+              boxShadow: 3,
+              maxWidth: '80%'
+            }}
+            startIcon={isLoading ? <CircularProgress size={24} color="inherit" /> : <FaSignInAlt size={20} />}
+          >
+            {isLoading ? 'Logging in...' : 'Enter Admin Portal'}
+          </Button>
+          
+          <Typography variant="body2" align="center" color="text.secondary" mt={2}>
+            Click the button above to continue
+          </Typography>
+        </Stack>
       </Paper>
     </Box>
   );
