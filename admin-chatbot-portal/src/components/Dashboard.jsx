@@ -46,7 +46,7 @@ const EXPANDED_WIDTH = 240;
 const COLLAPSED_WIDTH = 72;
 const DASHBOARD_MAIN_GAP = 24; 
 
-const Dashboard = () => {
+const Dashboard = ({ onLogout }) => {
   const { mode } = useThemeMode();
   const [lowConfidenceQueries, setLowConfidenceQueries] = useState([]);
   const [activeTab, setActiveTab] = useState('');
@@ -334,7 +334,8 @@ const Dashboard = () => {
         <Header 
           activeTab={activeTab} 
           isMobile={isMobile} 
-          setMobileSidebarOpen={setMobileSidebarOpen} 
+          setMobileSidebarOpen={setMobileSidebarOpen}
+          onLogout={onLogout}
         />
         
         {/* Main Content with proper padding */}

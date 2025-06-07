@@ -3,16 +3,39 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
+import GoogleCallback from './components/GoogleCallback';
 import { AccessibilityProvider, useThemeMode } from './components/Accessibility';
 import { darkTheme, lightTheme } from './theme';
+import ProtectedRoute from './components/ProtectedRoute';
+import { authService } from './services/authService';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
-  
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check authentication status on mount and when auth state changes
+    const checkAuth = () => {
+      const isAuth = authService.isAuthenticated();
+      setIsAuthenticated(isAuth);
+      setIsLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
   const handleLogin = () => {
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
+    setIsAuthenticated(true);
   };
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsAuthenticated(false);
+  };
+
+  if (isLoading) {
+    return null; // or a loading spinner
+  }
 
   // Wrap the app content with theme provider
   const AppContent = () => {
@@ -32,11 +55,35 @@ function App() {
           <Routes>
             <Route 
               path="/login" 
-              element={isLoggedIn ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} 
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Login onLogin={handleLogin} />
+                )
+              } 
             />
             <Route 
-              path="*" 
-              element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />} 
+              path="/auth/google/callback" 
+              element={<GoogleCallback />} 
+            />
+            <Route 
+              path="/dashboard/*" 
+              element={
+                <ProtectedRoute isAuthenticated={isAuthenticated}>
+                  <Dashboard onLogout={handleLogout} />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/" 
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              } 
             />
           </Routes>
         </Box>
@@ -46,7 +93,7 @@ function App() {
 
   return (
     <Router>
-      <AccessibilityProvider defaultMode="dark">
+      <AccessibilityProvider>
         <AppContent />
       </AccessibilityProvider>
     </Router>
